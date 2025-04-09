@@ -120,15 +120,16 @@ def hosts():
     connection = get_db_connection()
     try:
         # Handle POST request (adding new host)
-        if request.method == 'POST' and 'hostname' in request.form:
-            hostname = request.form['hostname']
+        if request.method == 'POST' and 'ip_address' in request.form:
             ip_address = request.form['ip_address']
-            os = request.form['os']
-
+            hostname = request.form.get('hostname', '')
+            ports = request.form.get('ports', '')
+            
             with connection.cursor() as cursor:
                 cursor.execute(
-                    'INSERT INTO hosts (hostname, ip_address, os) VALUES (%s, %s, %s)',
-                    (hostname, ip_address, os)
+                    'INSERT INTO hosts (ip_address, hostname, ports, last_scanned) '
+                    'VALUES (%s, %s, %s, CURRENT_TIMESTAMP)',
+                    (ip_address, hostname, ports)
                 )
                 connection.commit()
                 flash('Host added successfully!', 'success')
@@ -136,10 +137,16 @@ def hosts():
 
         # Handle GET request (displaying hosts)
         page = request.args.get('page', 1, type=int)
-        per_page = 50  # Adjust based on your needs
+        per_page = 50
+        sort = request.args.get('sort', 'last_scanned')
+        direction = request.args.get('direction', 'desc')
         
+        valid_sorts = ['ip_address', 'hostname', 'ports', 'last_scanned']
+        sort = sort if sort in valid_sorts else 'last_scanned'
+        direction = 'DESC' if direction.lower() == 'desc' else 'ASC'
+
         with connection.cursor() as cursor:
-            # Get total count for pagination
+            # Get total count
             cursor.execute('SELECT COUNT(*) FROM hosts')
             total = cursor.fetchone()[0]
             
@@ -148,17 +155,16 @@ def hosts():
             
             # Fetch paginated results
             cursor.execute(
-                'SELECT * FROM hosts ORDER BY id LIMIT %s OFFSET %s',
+                f'SELECT id, ip_address, hostname, ports, last_scanned '
+                f'FROM hosts ORDER BY {sort} {direction} LIMIT %s OFFSET %s',
                 (per_page, offset)
             )
             hosts = cursor.fetchall()
             
-            # Calculate pagination variables
-            pages = (total + per_page - 1) // per_page  # Ceiling division
+            pages = (total + per_page - 1) // per_page
             
             return render_template(
                 'hosts.html',
-                title="Hosts",
                 hosts=hosts,
                 pagination={
                     'page': page,
@@ -166,9 +172,17 @@ def hosts():
                     'total': total,
                     'pages': pages,
                     'has_prev': page > 1,
-                    'has_next': page < pages
+                    'has_next': page < pages,
+                    'sort': sort,
+                    'direction': direction
                 }
             )
+    except Exception as e:
+        flash(f'Database error: {str(e)}', 'error')
+        app.logger.error(f'Database error in hosts route: {str(e)}')
+        return redirect(url_for('hosts'))
+    finally:
+        connection.close()
     except Exception as e:
         flash(f'Database error: {str(e)}', 'error')
         app.logger.error(f'Database error in hosts route: {str(e)}')
