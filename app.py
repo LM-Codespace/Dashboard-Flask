@@ -114,29 +114,67 @@ def logout():
 
 @app.route('/hosts', methods=['GET', 'POST'])
 def hosts():
-    if 'loggedin' in session:
-        connection = get_db_connection()
-        try:
-            if request.method == 'POST':
-                if 'hostname' in request.form:
-                    hostname = request.form['hostname']
-                    ip_address = request.form['ip_address']
-                    os = request.form['os']
-
-                    with connection.cursor() as cursor:
-                        cursor.execute('INSERT INTO hosts (hostname, ip_address, os) VALUES (%s, %s, %s)',
-                                     (hostname, ip_address, os))
-                        connection.commit()
-                        flash('Host added successfully!', 'success')
-                        return redirect(url_for('hosts'))
+    if 'loggedin' not in session:
+        return redirect(url_for('login'))
+    
+    connection = get_db_connection()
+    try:
+        # Handle POST request (adding new host)
+        if request.method == 'POST' and 'hostname' in request.form:
+            hostname = request.form['hostname']
+            ip_address = request.form['ip_address']
+            os = request.form['os']
 
             with connection.cursor() as cursor:
-                cursor.execute('SELECT * FROM hosts')
-                hosts = cursor.fetchall()
-                return render_template('hosts.html', title="Hosts", hosts=hosts)
-        finally:
-            connection.close()
-    return redirect(url_for('login'))
+                cursor.execute(
+                    'INSERT INTO hosts (hostname, ip_address, os) VALUES (%s, %s, %s)',
+                    (hostname, ip_address, os)
+                )
+                connection.commit()
+                flash('Host added successfully!', 'success')
+                return redirect(url_for('hosts'))
+
+        # Handle GET request (displaying hosts)
+        page = request.args.get('page', 1, type=int)
+        per_page = 50  # Adjust based on your needs
+        
+        with connection.cursor() as cursor:
+            # Get total count for pagination
+            cursor.execute('SELECT COUNT(*) FROM hosts')
+            total = cursor.fetchone()[0]
+            
+            # Calculate offset
+            offset = (page - 1) * per_page
+            
+            # Fetch paginated results
+            cursor.execute(
+                'SELECT * FROM hosts ORDER BY id LIMIT %s OFFSET %s',
+                (per_page, offset)
+            )
+            hosts = cursor.fetchall()
+            
+            # Calculate pagination variables
+            pages = (total + per_page - 1) // per_page  # Ceiling division
+            
+            return render_template(
+                'hosts.html',
+                title="Hosts",
+                hosts=hosts,
+                pagination={
+                    'page': page,
+                    'per_page': per_page,
+                    'total': total,
+                    'pages': pages,
+                    'has_prev': page > 1,
+                    'has_next': page < pages
+                }
+            )
+    except Exception as e:
+        flash(f'Database error: {str(e)}', 'error')
+        app.logger.error(f'Database error in hosts route: {str(e)}')
+        return redirect(url_for('hosts'))
+    finally:
+        connection.close()
 
 @app.route('/hosts/bulk_csv', methods=['POST'])
 def bulk_add_hosts_csv():
