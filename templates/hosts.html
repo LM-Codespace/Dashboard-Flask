@@ -39,31 +39,64 @@
 
         <button type="submit" class="btn btn-primary">Upload and Process</button>
     </form>
-    <!-- Hosts Table -->
-    <h2>Existing Hosts</h2>
-    <table>
-        <thead>
-            <tr>
-                <th>Hostname</th>
-                <th>IP Address</th>
-                <th>Operating System</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for host in hosts %}
-                <tr>
-                    <td>{{ host[1] }}</td>
-                    <td>{{ host[2] }}</td>
-                    <td>{{ host[3] }}</td>
-                    <td>
-                        <a href="/hosts/edit/{{ host[0] }}">Edit</a> |
-                        <a href="/hosts/delete/{{ host[0] }}">Delete</a>
-                    </td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+<table class="host-table">
+    <thead>
+        <tr>
+            <th>
+                <a href="{{ url_for('hosts', sort='ip_address', direction=('asc' if sort == 'ip_address' and direction == 'desc' else 'desc')) }}">
+                    IP Address
+                    {% if sort == 'ip_address' %}
+                        {% if direction == 'desc' %}↓{% else %}↑{% endif %}
+                    {% endif %}
+                </a>
+            </th>
+            <th>
+                <a href="{{ url_for('hosts', sort='hostname', direction=('asc' if sort == 'hostname' and direction == 'desc' else 'desc')) }}">
+                    Hostname
+                    {% if sort == 'hostname' %}
+                        {% if direction == 'desc' %}↓{% else %}↑{% endif %}
+                    {% endif %}
+                </a>
+            </th>
+            <th>Ports</th>
+            <th>
+                <a href="{{ url_for('hosts', sort='last_scanned', direction=('asc' if sort == 'last_scanned' and direction == 'desc' else 'desc')) }}">
+                    Last Scanned
+                    {% if sort == 'last_scanned' %}
+                        {% if direction == 'desc' %}↓{% else %}↑{% endif %}
+                    {% endif %}
+                </a>
+            </th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for host in hosts %}
+        <tr>
+            <td>{{ host.ip_address }}</td>
+            <td>{{ host.hostname if host.hostname else 'N/A' }}</td>
+            <td>
+                {% if host.ports %}
+                    {{ host.ports|replace(",", ", ") }}
+                {% else %}
+                    Not scanned
+                {% endif %}
+            </td>
+            <td>
+                {% if host.last_scanned %}
+                    {{ host.last_scanned.strftime('%Y-%m-%d %H:%M') }}
+                {% else %}
+                    Never
+                {% endif %}
+            </td>
+            <td>
+                <a href="{{ url_for('edit_host', id=host.id) }}" class="btn-edit">Edit</a> | 
+                <a href="{{ url_for('delete_host', id=host.id) }}" class="btn-delete" onclick="return confirm('Are you sure?')">Delete</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
 <!-- After your hosts table -->
 <div class="pagination">
     {% if pagination.has_prev %}
