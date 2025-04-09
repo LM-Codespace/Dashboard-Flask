@@ -1,9 +1,9 @@
 {% extends "base.html" %}
 {% block content %}
     <h1>Proxy List</h1>
-    
-    <a href="{{ url_for('scan_proxies') }}" class="btn">Scan New Proxies</a>
-    
+
+    <a href="{{ url_for('proxies.scan_proxies') }}" class="btn">Scan New Proxies</a>
+
     <table class="proxy-table">
         <thead>
             <tr>
