@@ -55,13 +55,14 @@ def scrape_proxies(url):
             # Example scraping logic, adjust based on how proxies are formatted on the page
             # Here assuming proxies are listed in plain text like "IP:PORT"
             proxies = response.text.splitlines()  # Adjust depending on the actual format
-            print(f"Found {len(proxies)} proxies.")
+            print(f"Found {len(proxies)} proxies.")  # Output the number of proxies found
         else:
             print(f"Failed to scrape URL: {url}, Status Code: {response.status_code}")
     except Exception as e:
         print(f"Error scraping URL {url}: {e}")
     
     return proxies
+
 
 
 # Add proxy to the database
