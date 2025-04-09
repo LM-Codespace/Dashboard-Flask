@@ -149,15 +149,16 @@ def hosts():
             # Calculate offset
             offset = (page - 1) * per_page
             
-            # Fetch paginated results - modified to use DictCursor
-            cursor = connection.cursor(dictionary=True)  # This line is key!
-            
+            # Fetch paginated results
             cursor.execute(
                 'SELECT id, ip_address, hostname, ports, last_scanned '
                 'FROM hosts ORDER BY last_scanned DESC LIMIT %s OFFSET %s',
                 (per_page, offset)
             )
-            hosts = cursor.fetchall()
+            
+            # Convert tuples to dictionaries manually
+            columns = ['id', 'ip_address', 'hostname', 'ports', 'last_scanned']
+            hosts = [dict(zip(columns, row)) for row in cursor.fetchall()]
             
             pages = (total + per_page - 1) // per_page
             
