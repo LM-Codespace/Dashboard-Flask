@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block content %}
+    <h1>Proxies</h1>
+    <a href="/proxies/add">Add New Proxy</a>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>IP Address</th>
+                <th>Port</th>
+                <th>Type</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for proxy in proxies %}
+            <tr>
+                <td>{{ proxy[0] }}</td>
+                <td>{{ proxy[1] }}</td>
+                <td>{{ proxy[2] }}</td>
+                <td>{{ proxy[3] }}</td>
+                <td>{{ proxy[4] }}</td>
+                <td>
+                    <a href="/proxies/edit/{{ proxy[0] }}">Edit</a>
+                    <a href="/proxies/delete/{{ proxy[0] }}">Delete</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}
