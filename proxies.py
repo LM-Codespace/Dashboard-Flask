@@ -21,18 +21,17 @@ def get_db_connection():
 # This is the endpoint you're likely looking for
 @proxies_bp.route('/scan_proxies', methods=['POST'])
 def scan_proxies():
-    url = request.form.get('proxy_url')  # Make sure you're getting the URL correctly from the form
+    url = request.form.get('proxy_url')  # Get the URL entered by the user
     if url:
-        proxies = scrape_proxies(url)
+        proxies = scrape_proxies(url)  # Call the scraping function
         if proxies:
             print(f"Found {len(proxies)} proxies to add.")
-            # Save proxies to the database
             connection = get_db_connection()
             with connection.cursor() as cursor:
                 for proxy in proxies:
-                    ip, port = proxy
+                    ip, port = proxy.split(":")  # Assuming the proxy is in the format "IP:PORT"
                     cursor.execute("INSERT INTO proxies (ip_address, port, status) VALUES (%s, %s, %s)",
-                                   (ip, port, 'UNKNOWN'))  # Initially set status as 'UNKNOWN'
+                                   (ip, port, 'UNKNOWN'))  # Insert with status 'UNKNOWN'
                 connection.commit()
             flash(f"{len(proxies)} proxies scraped and added!")
         else:
