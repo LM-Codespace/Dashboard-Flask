@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block content %}
+    <h1>Scan for Proxies</h1>
+    
+    <form method="POST" action="{{ url_for('scan_proxies') }}">
+        <div class="form-group">
+            <label for="urls">URLs to scan (one per line):</label>
+            <textarea id="urls" name="urls" rows="10" class="form-control" required></textarea>
+            <small class="form-text">
+                Enter URLs that might contain proxy lists. Common sources:<br>
+                - https://www.socks-proxy.net/<br>
+                - https://free-proxy-list.net/<br>
+                - https://spys.one/en/socks-proxy-list/
+            </small>
+        </div>
+        
+        <button type="submit" class="btn">Start Scanning</button>
+    </form>
+{% endblock %}
