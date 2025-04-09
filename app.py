@@ -336,20 +336,54 @@ def proxies():
     try:
         connection = get_db_connection()
         with connection.cursor() as cursor:
-            cursor.execute('''
-                SELECT id, ip_address, port, protocol, country, latency, last_checked, is_active 
+            # First check if the table has all columns
+            cursor.execute("""
+                SELECT column_name 
+                FROM information_schema.columns 
+                WHERE table_name = 'proxies'
+            """)
+            existing_columns = {row[0] for row in cursor.fetchall()}
+            
+            # Build query based on available columns
+            columns = []
+            if 'protocol' in existing_columns:
+                columns.append('protocol')
+            if 'country' in existing_columns:
+                columns.append('country')
+            if 'latency' in existing_columns:
+                columns.append('latency')
+            if 'last_checked' in existing_columns:
+                columns.append('last_checked')
+            if 'is_active' in existing_columns:
+                columns.append('is_active')
+            
+            base_columns = 'id, ip_address, port'
+            additional_columns = ', ' + ', '.join(columns) if columns else ''
+            
+            cursor.execute(f'''
+                SELECT {base_columns}{additional_columns}
                 FROM proxies 
-                ORDER BY last_checked DESC
+                ORDER BY last_checked DESC NULLS FIRST
             ''')
-            proxies = [dict(zip(
-                ['id', 'ip_address', 'port', 'protocol', 'country', 'latency', 'last_checked', 'is_active'],
-                row
-            )) for row in cursor.fetchall()]
+            
+            # Create dictionary results
+            column_names = ['id', 'ip_address', 'port'] + columns
+            proxies = [dict(zip(column_names, row)) for row in cursor.fetchall()]
+            
+            # Set default values for missing columns
+            for proxy in proxies:
+                proxy.setdefault('protocol', 'socks5')
+                proxy.setdefault('country', None)
+                proxy.setdefault('latency', None)
+                proxy.setdefault('last_checked', None)
+                proxy.setdefault('is_active', True)
             
         return render_template('proxies.html', proxies=proxies)
+        
     except Exception as e:
         flash(f'Database error: {str(e)}', 'error')
-        return redirect(url_for('index'))
+        app.logger.error(f'Database error in proxies route: {str(e)}')
+        return redirect(url_for('dashboard'))  # Redirect to dashboard instead of index
     finally:
         if connection:
             connection.close()
