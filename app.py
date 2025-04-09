@@ -117,7 +117,7 @@ def hosts():
     if 'loggedin' not in session:
         return redirect(url_for('login'))
     
-    connection = None  # Initialize connection variable
+    connection = None
     try:
         connection = get_db_connection()
         
@@ -142,9 +142,15 @@ def hosts():
         per_page = 50
         
         with connection.cursor() as cursor:
+            # Get total count
             cursor.execute('SELECT COUNT(*) FROM hosts')
             total = cursor.fetchone()[0]
+            
+            # Calculate offset
             offset = (page - 1) * per_page
+            
+            # Fetch paginated results - modified to use DictCursor
+            cursor = connection.cursor(dictionary=True)  # This line is key!
             
             cursor.execute(
                 'SELECT id, ip_address, hostname, ports, last_scanned '
@@ -176,7 +182,7 @@ def hosts():
     finally:
         if connection:
             connection.close()
-
+            
 @app.route('/hosts/bulk_csv', methods=['POST'])
 def bulk_add_hosts_csv():
     if 'loggedin' not in session:
