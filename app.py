@@ -8,8 +8,8 @@ app.secret_key = 'your_secret_key'
 
 # MySQL Config
 app.config['MYSQL_HOST'] = 'localhost'
-app.config['MYSQL_USER'] = 'your_mysql_user'
-app.config['MYSQL_PASSWORD'] = 'your_mysql_password'
+app.config['MYSQL_USER'] = 'flaskuser'
+app.config['MYSQL_PASSWORD'] = 'flaskpassword'
 app.config['MYSQL_DB'] = 'flask_dashboard'
 
 # Initialize MySQL
