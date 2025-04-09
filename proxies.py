@@ -88,7 +88,6 @@ def check_proxy(ip, port):
         return False
 
 
-# Check proxies for being live and update their status
 @proxies_bp.route('/check_proxies', methods=['POST'])
 def check_proxies():
     connection = get_db_connection()
@@ -98,10 +97,11 @@ def check_proxies():
 
         for proxy in proxies_data:
             ip, port = proxy[1], proxy[2]  # Assuming columns [id, ip_address, port]
-            if check_proxy(ip, port):
+            if check_proxy(ip, port):  # Using the new check_proxy function
                 cursor.execute("UPDATE proxies SET status = 'LIVE' WHERE id = %s", (proxy[0],))
             else:
                 cursor.execute("UPDATE proxies SET status = 'DEAD' WHERE id = %s", (proxy[0],))
+        
         connection.commit()
 
     flash("Proxies checked successfully!")
