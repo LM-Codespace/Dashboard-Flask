@@ -22,6 +22,7 @@ def get_db_connection():
 @proxies_bp.route('/scan_proxies', methods=['POST'])
 def scan_proxies():
     url = request.form.get('proxy_url')  # Get the URL entered by the user
+    print(f"Received URL: {url}")  # This will help check if the URL is being received correctly
     if url:
         proxies = scrape_proxies(url)  # Call the scraping function
         if proxies:
@@ -36,6 +37,9 @@ def scan_proxies():
             flash(f"{len(proxies)} proxies scraped and added!")
         else:
             flash("No proxies found on the provided URL.")
+    else:
+        flash("No URL provided for scraping.")
+    
     return redirect(url_for('proxies.proxies'))
 
 
