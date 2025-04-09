@@ -19,24 +19,25 @@ def get_db_connection():
     return pymysql.connect(**DB_CONFIG)
 
 # This is the endpoint you're likely looking for
-@proxies_bp.route('/scan_proxies', methods=['GET', 'POST'])
+@proxies_bp.route('/scan_proxies', methods=['POST'])
 def scan_proxies():
-    if request.method == 'POST':
-        urls = request.form['urls'].splitlines()  # List of URLs entered by the user
-        proxies_list = []
-        
-        # Scrape the IP:PORT list from the provided URLs
-        for url in urls:
-            proxies_list.extend(scrape_proxies_from_url(url))
-
-        # Add scraped proxies to the database
-        for proxy in proxies_list:
-            add_proxy_to_db(proxy)
-
-        flash(f'Found {len(proxies_list)} proxies and added them to the database.')
-        return redirect(url_for('proxies.proxies'))
-
-    return render_template('scan_proxies.html')
+    url = request.form.get('proxy_url')  # Make sure you're getting the URL correctly from the form
+    if url:
+        proxies = scrape_proxies(url)
+        if proxies:
+            print(f"Found {len(proxies)} proxies to add.")
+            # Save proxies to the database
+            connection = get_db_connection()
+            with connection.cursor() as cursor:
+                for proxy in proxies:
+                    ip, port = proxy
+                    cursor.execute("INSERT INTO proxies (ip_address, port, status) VALUES (%s, %s, %s)",
+                                   (ip, port, 'UNKNOWN'))  # Initially set status as 'UNKNOWN'
+                connection.commit()
+            flash(f"{len(proxies)} proxies scraped and added!")
+        else:
+            flash("No proxies found on the provided URL.")
+    return redirect(url_for('proxies.proxies'))
 
 # Scrape proxy list (IP:PORT) from a URL
 def scrape_proxies_from_url(url):
