@@ -1,36 +1,38 @@
 {% extends "base.html" %}
+
 {% block content %}
-    <h1>Proxy List</h1>
+<h2>Proxies</h2>
 
-    <a href="{{ url_for('proxies.scan_proxies') }}" class="btn">Scan New Proxies</a>
+<form action="{{ url_for('proxies.scan_proxies') }}" method="POST">
+    <label for="urls">Enter URLs to scrape proxies from (one per line):</label><br>
+    <textarea id="urls" name="urls" rows="4" cols="50"></textarea><br>
+    <button type="submit">Scan Proxies</button>
+</form>
 
-    <table class="proxy-table">
-        <thead>
-            <tr>
-                <th>IP Address</th>
-                <th>Port</th>
-                <th>Protocol</th>
-                <th>Latency</th>
-                <th>Last Checked</th>
-                <th>Status</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for proxy in proxies %}
-            <tr class="{{ 'active' if proxy.is_active else 'inactive' }}">
-                <td>{{ proxy.ip_address }}</td>
-                <td>{{ proxy.port }}</td>
-                <td>{{ proxy.protocol }}</td>
-                <td>{{ "%.2f ms"|format(proxy.latency) if proxy.latency else 'N/A' }}</td>
-                <td>{{ proxy.last_checked.strftime('%Y-%m-%d %H:%M') if proxy.last_checked else 'Never' }}</td>
-                <td>{{ 'Active' if proxy.is_active else 'Inactive' }}</td>
-                <td>
-                    <a href="{{ url_for('check_proxy', id=proxy.id) }}" class="btn-check">Check</a>
-                    <a href="{{ url_for('delete_proxy', id=proxy.id) }}" class="btn-delete" onclick="return confirm('Delete this proxy?')">Delete</a>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+<h3>Actions:</h3>
+<form action="{{ url_for('proxies.check_proxies') }}" method="POST">
+    <button type="submit">Check All Proxies</button>
+</form>
+
+<form action="{{ url_for('proxies.delete_dead_proxies') }}" method="POST">
+    <button type="submit">Delete Dead Proxies</button>
+</form>
+
+<h3>Existing Proxies:</h3>
+<table>
+    <tr>
+        <th>ID</th>
+        <th>IP</th>
+        <th>Port</th>
+        <th>Status</th>
+    </tr>
+    {% for proxy in proxies %}
+    <tr>
+        <td>{{ proxy.id }}</td>
+        <td>{{ proxy.ip_address }}</td>
+        <td>{{ proxy.port }}</td>
+        <td>{{ proxy.status }}</td>
+    </tr>
+    {% endfor %}
+</table>
 {% endblock %}
