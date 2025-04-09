@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+    <h1>Edit Host</h1>
+    <form method="POST" action="/hosts/edit/{{ host[0] }}">
+        <label for="hostname">Hostname</label>
+        <input type="text" id="hostname" name="hostname" value="{{ host[1] }}" required>
+
+        <label for="ip_address">IP Address</label>
+        <input type="text" id="ip_address" name="ip_address" value="{{ host[2] }}" required>
+
+        <label for="os">Operating System</label>
+        <input type="text" id="os" name="os" value="{{ host[3] }}" required>
+
+        <input type="submit" value="Save Changes">
+    </form>
+{% endblock %}
