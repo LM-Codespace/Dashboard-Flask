@@ -39,5 +39,13 @@ def home():
         return redirect(url_for('hosts.hosts'))
     return redirect(url_for('auth.login'))
 
+@app.route('/dashboard')
+def dashboard():
+    return render_template('dashboard.html')
+@app.route('/scans')
+def scans():
+    return render_template('scans.html')
+
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
