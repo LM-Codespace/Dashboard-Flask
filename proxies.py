@@ -38,38 +38,31 @@ def scan_proxies():
 
     return render_template('scan_proxies.html')
 
-
 # Scrape proxy list (IP:PORT) from a URL
 def scrape_proxies_from_url(url):
     proxies = []
     try:
-        # Fetch the page content
-        print(f"Scraping URL: {url}")  # Debug log
+        print(f"Scraping URL: {url}")
         response = requests.get(url)
-        print(f"Response status code: {response.status_code}")  # Debug log
+        print(f"Response status code: {response.status_code}")
 
         if response.status_code != 200:
             print(f"Failed to fetch URL {url}, Status code: {response.status_code}")
             return proxies
 
-        # Parse the HTML content
-        soup = BeautifulSoup(response.text, 'html.parser')
-
-        # Example: Find proxies in a table or list
-        # Modify this part to suit the actual structure of the page you're scraping
-        for row in soup.find_all('tr'):  # Assuming proxies are in rows
-            cols = row.find_all('td')
-            if len(cols) >= 2:
-                ip = cols[0].text.strip()
-                port = cols[1].text.strip()
-                proxy = f'{ip}:{port}'
-                print(f"Found proxy: {proxy}")  # Debug log
-                proxies.append(proxy)
+        # For raw text files, we assume each line contains a proxy in the format 'IP:PORT'
+        # Example: '192.168.1.1:8080'
+        proxy_list = response.text.splitlines()
+        
+        for proxy in proxy_list:
+            if ':' in proxy:  # Ensure it's in the IP:PORT format
+                proxies.append(proxy.strip())
 
         if not proxies:
-            print("No proxies found on this URL.")  # Debug log
+            print("No proxies found on this URL.")
     except Exception as e:
-        print(f"Error scraping {url}: {e}")  # Log the error
+        print(f"Error scraping {url}: {e}")
+    
     return proxies
 
 
