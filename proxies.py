@@ -4,7 +4,7 @@ import requests
 import socks
 import socket
 from bs4 import BeautifulSoup
-
+from ping3 import ping
 proxies_bp = Blueprint('proxies', __name__)
 
 # DB connection
@@ -75,16 +75,25 @@ def add_proxy_to_db(proxy):
                        (ip, port, 'SOCKS5'))
         connection.commit()
 
-
-# Check if a proxy is live
-def check_proxy(ip, port):
+def check_proxy(ip_address, port):
     try:
-        socks.set_default_proxy(socks.SOCKS5, ip, int(port))
-        socket.socket = socks.socksocket  # Monkey patch socket to route through SOCKS5
-        response = requests.get('http://httpbin.org/ip', timeout=5)  # Test if proxy is working
-        return response.status_code == 200
+        # Ping the IP address (check if the server is reachable)
+        ping_response = ping(ip_address, timeout=3)
+        if ping_response is None:
+            print(f"Proxy {ip_address} is not reachable via ping.")
+            return False
+
+        # Check if the port is open (proxy is listening)
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.settimeout(3)
+        result = s.connect_ex((ip_address, port))
+        if result == 0:
+            return True
+        else:
+            print(f"Proxy {ip_address}:{port} is not listening on the port.")
+            return False
     except Exception as e:
-        print(f"Proxy {ip}:{port} failed: {e}")
+        print(f"Error checking proxy {ip_address}:{port} - {e}")
         return False
 
 
