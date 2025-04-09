@@ -39,6 +39,7 @@ def scan_proxies():
             flash("No proxies found on the provided URL.")
     return redirect(url_for('proxies.proxies'))
 
+
 # Scrape proxy list (IP:PORT) from a URL
 def scrape_proxies_from_url(url):
     proxies = []
@@ -78,6 +79,9 @@ def add_proxy_to_db(proxy):
 
 def check_proxy(ip_address, port):
     try:
+        # Log when a proxy is being checked
+        print(f"Checking proxy: {ip_address}:{port}")
+        
         # Ping the IP address (check if the server is reachable)
         ping_response = ping(ip_address, timeout=3)
         if ping_response is None:
@@ -89,6 +93,7 @@ def check_proxy(ip_address, port):
         s.settimeout(3)
         result = s.connect_ex((ip_address, port))
         if result == 0:
+            print(f"Proxy {ip_address}:{port} is live and listening.")
             return True
         else:
             print(f"Proxy {ip_address}:{port} is not listening on the port.")
@@ -96,7 +101,6 @@ def check_proxy(ip_address, port):
     except Exception as e:
         print(f"Error checking proxy {ip_address}:{port} - {e}")
         return False
-
 
 @proxies_bp.route('/check_proxies', methods=['POST'])
 def check_proxies():
@@ -107,9 +111,12 @@ def check_proxies():
 
         for proxy in proxies_data:
             ip, port = proxy[1], proxy[2]  # Assuming columns [id, ip_address, port]
+            print(f"Checking proxy {ip}:{port}")  # Log for debugging
             if check_proxy(ip, port):  # Using the new check_proxy function
+                print(f"Proxy {ip}:{port} is LIVE")
                 cursor.execute("UPDATE proxies SET status = 'LIVE' WHERE id = %s", (proxy[0],))
             else:
+                print(f"Proxy {ip}:{port} is DEAD")
                 cursor.execute("UPDATE proxies SET status = 'DEAD' WHERE id = %s", (proxy[0],))
         
         connection.commit()
