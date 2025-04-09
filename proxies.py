@@ -40,28 +40,35 @@ def scan_proxies():
         flash("No URL provided for scraping.")
     
     return redirect(url_for('proxies.proxies'))
-
-
+    
 def scrape_proxies(url):
     print(f"Scraping proxies from: {url}")  # Log the URL being scraped
     proxies = []
     
     try:
+        # Send a GET request to the URL
         response = requests.get(url)
+        
         if response.status_code == 200:
             print(f"Successfully scraped URL: {url}")
-            # Example scraping logic, adjust based on how proxies are formatted on the page
-            # Here assuming proxies are listed in plain text like "IP:PORT"
-            proxies = response.text.splitlines()  # Adjust depending on the actual format
-            print(f"Found {len(proxies)} proxies.")  # Output the number of proxies found
+            
+            # Split the response text by lines (proxies are assumed to be one per line)
+            proxies_raw = response.text.splitlines()
+            
+            # Filter out any malformed proxies (those without a colon)
+            for proxy in proxies_raw:
+                # Check if the proxy contains exactly one colon (ip:port format)
+                if proxy.count(':') == 1:
+                    proxies.append(proxy)
+                else:
+                    print(f"Skipping invalid proxy: {proxy}")  # Log invalid proxies
+            print(f"Found {len(proxies)} valid proxies.")  # Output the number of valid proxies found
         else:
             print(f"Failed to scrape URL: {url}, Status Code: {response.status_code}")
     except Exception as e:
         print(f"Error scraping URL {url}: {e}")
     
     return proxies
-
-
 
 # Add proxy to the database
 def add_proxy_to_db(proxy):
