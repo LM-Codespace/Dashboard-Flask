@@ -117,9 +117,11 @@ def hosts():
     if 'loggedin' not in session:
         return redirect(url_for('login'))
     
-    connection = get_db_connection()
+    connection = None  # Initialize connection variable
     try:
-        # Handle POST request (adding new host)
+        connection = get_db_connection()
+        
+        # Handle POST request
         if request.method == 'POST' and 'ip_address' in request.form:
             ip_address = request.form['ip_address']
             hostname = request.form.get('hostname', '')
@@ -135,28 +137,18 @@ def hosts():
                 flash('Host added successfully!', 'success')
                 return redirect(url_for('hosts'))
 
-        # Handle GET request (displaying hosts)
+        # Handle GET request
         page = request.args.get('page', 1, type=int)
         per_page = 50
-        sort = request.args.get('sort', 'last_scanned')
-        direction = request.args.get('direction', 'desc')
         
-        valid_sorts = ['ip_address', 'hostname', 'ports', 'last_scanned']
-        sort = sort if sort in valid_sorts else 'last_scanned'
-        direction = 'DESC' if direction.lower() == 'desc' else 'ASC'
-
         with connection.cursor() as cursor:
-            # Get total count
             cursor.execute('SELECT COUNT(*) FROM hosts')
             total = cursor.fetchone()[0]
-            
-            # Calculate offset
             offset = (page - 1) * per_page
             
-            # Fetch paginated results
             cursor.execute(
-                f'SELECT id, ip_address, hostname, ports, last_scanned '
-                f'FROM hosts ORDER BY {sort} {direction} LIMIT %s OFFSET %s',
+                'SELECT id, ip_address, hostname, ports, last_scanned '
+                'FROM hosts ORDER BY last_scanned DESC LIMIT %s OFFSET %s',
                 (per_page, offset)
             )
             hosts = cursor.fetchall()
@@ -172,23 +164,18 @@ def hosts():
                     'total': total,
                     'pages': pages,
                     'has_prev': page > 1,
-                    'has_next': page < pages,
-                    'sort': sort,
-                    'direction': direction
+                    'has_next': page < pages
                 }
             )
+            
     except Exception as e:
         flash(f'Database error: {str(e)}', 'error')
         app.logger.error(f'Database error in hosts route: {str(e)}')
         return redirect(url_for('hosts'))
+        
     finally:
-        connection.close()
-    except Exception as e:
-        flash(f'Database error: {str(e)}', 'error')
-        app.logger.error(f'Database error in hosts route: {str(e)}')
-        return redirect(url_for('hosts'))
-    finally:
-        connection.close()
+        if connection:
+            connection.close()
 
 @app.route('/hosts/bulk_csv', methods=['POST'])
 def bulk_add_hosts_csv():
