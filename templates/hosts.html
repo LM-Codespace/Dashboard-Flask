@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block content %}
+    <h1>Hosts</h1>
+    <p>Manage known and unknown devices on your network.</p>
+
+    <!-- Add Host Form -->
+    <h2>Add New Host</h2>
+    <form method="POST" action="/hosts">
+        <label for="hostname">Hostname</label>
+        <input type="text" id="hostname" name="hostname" required>
+
+        <label for="ip_address">IP Address</label>
+        <input type="text" id="ip_address" name="ip_address" required>
+
+        <label for="os">Operating System</label>
+        <input type="text" id="os" name="os" required>
+
+        <input type="submit" value="Add Host">
+    </form>
+
+
+    <!-- Bulk Upload Form -->
+    <h2>Bulk Upload IP Ranges</h2>
+    <form method="POST" action="/hosts/bulk_csv" enctype="multipart/form-data">
+        <div class="form-group">
+            <label for="csv_file">CSV File (start_ip,end_ip format):</label>
+            <input type="file" class="form-control" id="csv_file" name="csv_file" accept=".csv" required>
+            <small class="form-text text-muted">
+                Example CSV content:<br>
+                100.43.72.0,100.43.72.255<br>
+                102.222.77.0,102.222.77.255
+            </small>
+        </div>
+
+        <div class="form-group">
+            <label for="os">Operating System (for all hosts):</label>
+            <input type="text" class="form-control" id="os" name="os" required>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Upload and Process</button>
+    </form>
+    <!-- Hosts Table -->
+    <h2>Existing Hosts</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Hostname</th>
+                <th>IP Address</th>
+                <th>Operating System</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for host in hosts %}
+                <tr>
+                    <td>{{ host[1] }}</td>
+                    <td>{{ host[2] }}</td>
+                    <td>{{ host[3] }}</td>
+                    <td>
+                        <a href="/hosts/edit/{{ host[0] }}">Edit</a> |
+                        <a href="/hosts/delete/{{ host[0] }}">Delete</a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}
