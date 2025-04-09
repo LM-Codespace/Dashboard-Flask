@@ -41,29 +41,22 @@ def scan_proxies():
 
 
 # Scrape proxy list (IP:PORT) from a URL
-def scrape_proxies_from_url(url):
+def scrape_proxies(url):
+    print(f"Scraping proxies from: {url}")  # Log the URL being scraped
     proxies = []
+    
     try:
-        print(f"Scraping URL: {url}")
         response = requests.get(url)
-        print(f"Response status code: {response.status_code}")
-
-        if response.status_code != 200:
-            print(f"Failed to fetch URL {url}, Status code: {response.status_code}")
-            return proxies
-
-        # For raw text files, we assume each line contains a proxy in the format 'IP:PORT'
-        # Example: '192.168.1.1:8080'
-        proxy_list = response.text.splitlines()
-        
-        for proxy in proxy_list:
-            if ':' in proxy:  # Ensure it's in the IP:PORT format
-                proxies.append(proxy.strip())
-
-        if not proxies:
-            print("No proxies found on this URL.")
+        if response.status_code == 200:
+            print(f"Successfully scraped URL: {url}")
+            # Example scraping logic, adjust based on how proxies are formatted on the page
+            # Here assuming proxies are listed in plain text like "IP:PORT"
+            proxies = response.text.splitlines()  # Adjust depending on the actual format
+            print(f"Found {len(proxies)} proxies.")
+        else:
+            print(f"Failed to scrape URL: {url}, Status Code: {response.status_code}")
     except Exception as e:
-        print(f"Error scraping {url}: {e}")
+        print(f"Error scraping URL {url}: {e}")
     
     return proxies
 
