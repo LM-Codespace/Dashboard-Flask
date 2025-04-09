@@ -43,7 +43,6 @@ def scan_proxies():
     return redirect(url_for('proxies.proxies'))
 
 
-# Scrape proxy list (IP:PORT) from a URL
 def scrape_proxies(url):
     print(f"Scraping proxies from: {url}")  # Log the URL being scraped
     proxies = []
