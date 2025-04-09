@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, redirect, session, url_for
-import MySQLdb
+import pymysql
+pymysql.install_as_MySQLdb()
 import MySQLdb.cursors
 
 app = Flask(__name__)
