@@ -329,67 +329,89 @@ def delete_host(id):
 
 @app.route('/proxies')
 def proxies():
-    if 'loggedin' in session:
+    if 'loggedin' not in session:
+        return redirect(url_for('login'))
+    
+    connection = None
+    try:
         connection = get_db_connection()
-        try:
-            with connection.cursor() as cursor:
-                cursor.execute("SELECT * FROM proxies")
-                proxies_data = cursor.fetchall()
-                return render_template('proxies.html', title="Proxies", proxies=proxies_data)
-        finally:
+        with connection.cursor() as cursor:
+            cursor.execute('''
+                SELECT id, ip_address, port, protocol, country, latency, last_checked, is_active 
+                FROM proxies 
+                ORDER BY last_checked DESC
+            ''')
+            proxies = [dict(zip(
+                ['id', 'ip_address', 'port', 'protocol', 'country', 'latency', 'last_checked', 'is_active'],
+                row
+            )) for row in cursor.fetchall()]
+            
+        return render_template('proxies.html', proxies=proxies)
+    except Exception as e:
+        flash(f'Database error: {str(e)}', 'error')
+        return redirect(url_for('index'))
+    finally:
+        if connection:
             connection.close()
-    return redirect(url_for('login'))
 
-@app.route('/proxies/add', methods=['GET', 'POST'])
-def add_proxy():
-    if 'loggedin' in session:
-        connection = get_db_connection()
+@app.route('/proxies/scan', methods=['GET', 'POST'])
+def scan_proxies():
+    if 'loggedin' not in session:
+        return redirect(url_for('login'))
+    
+    if request.method == 'POST':
+        urls = request.form.get('urls', '').split('\n')
+        urls = [url.strip() for url in urls if url.strip()]
+        
+        if not urls:
+            flash('Please provide at least one URL', 'error')
+            return redirect(url_for('scan_proxies'))
+        
         try:
-            with connection.cursor() as cursor:
-                if request.method == 'POST':
-                    ip_address = request.form['ip_address']
-                    port = request.form['port']
-                    type = request.form['type']
-                    cursor.execute("INSERT INTO proxies (ip_address, port, type) VALUES (%s, %s, %s)", (ip_address, port, type))
-                    connection.commit()
-                    return redirect(url_for('proxies'))
-                return render_template('add_proxy.html', title="Add Proxy")
-        finally:
-            connection.close()
-    return redirect(url_for('login'))
-
-@app.route('/proxies/edit/<int:id>', methods=['GET', 'POST'])
-def edit_proxy(id):
-    if 'loggedin' in session:
-        connection = get_db_connection()
-        try:
-            with connection.cursor() as cursor:
-                cursor.execute("SELECT * FROM proxies WHERE id=%s", (id,))
-                proxy_data = cursor.fetchone()
-                if request.method == 'POST':
-                    ip_address = request.form['ip_address']
-                    port = request.form['port']
-                    type = request.form['type']
-                    cursor.execute("UPDATE proxies SET ip_address=%s, port=%s, type=%s WHERE id=%s", (ip_address, port, type, id))
-                    connection.commit()
-                    return redirect(url_for('proxies'))
-                return render_template('edit_proxy.html', title="Edit Proxy", proxy=proxy_data)
-        finally:
-            connection.close()
-    return redirect(url_for('login'))
-
-@app.route('/proxies/delete/<int:id>')
-def delete_proxy(id):
-    if 'loggedin' in session:
-        connection = get_db_connection()
-        try:
-            with connection.cursor() as cursor:
-                cursor.execute("DELETE FROM proxies WHERE id=%s", (id,))
-                connection.commit()
-        finally:
-            connection.close()
+            found_proxies = scrape_proxies_from_urls(urls)
+            working_proxies = check_proxies(found_proxies)
+            save_proxies(working_proxies)
+            
+            flash(f'Found {len(found_proxies)} proxies, {len(working_proxies)} working', 'success')
+        except Exception as e:
+            flash(f'Scan failed: {str(e)}', 'error')
+        
         return redirect(url_for('proxies'))
-    return redirect(url_for('login'))
+    
+    return render_template('scan_proxies.html')
 
+@app.route('/proxies/check/<int:id>')
+def check_proxy(id):
+    if 'loggedin' not in session:
+        return redirect(url_for('login'))
+    
+    connection = None
+    try:
+        connection = get_db_connection()
+        with connection.cursor() as cursor:
+            cursor.execute('SELECT ip_address, port FROM proxies WHERE id = %s', (id,))
+            proxy = cursor.fetchone()
+            
+            if proxy:
+                ip, port = proxy
+                is_working, latency = check_socks5_proxy(ip, port)
+                
+                cursor.execute('''
+                    UPDATE proxies 
+                    SET is_active = %s, latency = %s, last_checked = CURRENT_TIMESTAMP 
+                    WHERE id = %s
+                ''', (is_working, latency, id))
+                connection.commit()
+                
+                status = "working" if is_working else "not working"
+                flash(f'Proxy {ip}:{port} is {status} (latency: {latency:.2f}ms)', 'success' if is_working else 'warning')
+    
+    except Exception as e:
+        flash(f'Check failed: {str(e)}', 'error')
+    finally:
+        if connection:
+            connection.close()
+    
+    return redirect(url_for('proxies'))
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
