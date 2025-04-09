@@ -74,6 +74,48 @@ def process_ip_range(start_ip, end_ip, os):
         cursor.close()
         connection.close()
 
+@app.route('/hosts/scan/<int:id>')
+def scan_host(id):
+    if 'loggedin' not in session:
+        return redirect(url_for('login'))
+    
+    connection = None
+    try:
+        connection = get_db_connection()
+        with connection.cursor() as cursor:
+            # Get host information
+            cursor.execute('SELECT ip_address FROM hosts WHERE id = %s', (id,))
+            host = cursor.fetchone()
+            
+            if not host:
+                flash('Host not found', 'error')
+                return redirect(url_for('hosts'))
+            
+            ip_address = host[0]
+            
+            # Here you would implement your actual port scanning logic
+            # For now, we'll simulate a scan with common ports
+            scanned_ports = "22,80,443"  # Replace with actual scan results
+            last_scanned = datetime.now()
+            
+            # Update the host record
+            cursor.execute(
+                'UPDATE hosts SET ports = %s, last_scanned = %s WHERE id = %s',
+                (scanned_ports, last_scanned, id)
+            )
+            connection.commit()
+            
+            flash(f'Port scan completed for {ip_address}', 'success')
+            return redirect(url_for('hosts'))
+            
+    except Exception as e:
+        flash(f'Scan failed: {str(e)}', 'error')
+        app.logger.error(f'Scan failed for host {id}: {str(e)}')
+        return redirect(url_for('hosts'))
+    finally:
+        if connection:
+            connection.close()
+
 @app.route('/', methods=['GET', 'POST'])
 def login():
     msg = ''
