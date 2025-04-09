@@ -64,4 +64,16 @@
             {% endfor %}
         </tbody>
     </table>
+<!-- After your hosts table -->
+<div class="pagination">
+    {% if pagination.has_prev %}
+        <a href="{{ url_for('hosts', page=pagination.page-1) }}">Previous</a>
+    {% endif %}
+    
+    <span>Page {{ pagination.page }} of {{ pagination.pages }}</span>
+    
+    {% if pagination.has_next %}
+        <a href="{{ url_for('hosts', page=pagination.page+1) }}">Next</a>
+    {% endif %}
+</div>
 {% endblock %}
