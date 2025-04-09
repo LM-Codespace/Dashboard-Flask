@@ -98,7 +98,6 @@ def dashboard():
         return redirect(url_for('login'))
     return render_template('dashboard.html')
 
-# Hosts Management
 @app.route('/hosts', methods=['GET', 'POST'])
 def hosts():
     if 'loggedin' not in session:
@@ -152,7 +151,6 @@ def hosts():
                     'has_next': page < pages
                 }
             )
-            
     except Exception as e:
         flash(f'Database error: {str(e)}', 'error')
         app.logger.error(f'Database error in hosts route: {str(e)}')
@@ -160,6 +158,7 @@ def hosts():
     finally:
         if connection:
             connection.close()
+
 
 # Proxy Management
 @app.route('/proxies')
