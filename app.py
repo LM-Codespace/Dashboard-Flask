@@ -53,6 +53,7 @@ def process_ip_range(start_ip, end_ip, os):
                     cursor.execute(
                         'INSERT INTO hosts (hostname, ip_address, os) VALUES (%s, %s, %s)',
                         (hostname, str(ip), os)
+                    )
                     added += 1
                 else:
                     skipped += 1
@@ -205,7 +206,98 @@ def bulk_add_hosts_csv():
     
     return redirect(url_for('hosts'))
 
-# ... (keep all your existing proxy routes exactly as they are) ...
+@app.route('/hosts/edit/<int:id>', methods=['GET', 'POST'])
+def edit_host(id):
+    if 'loggedin' in session:
+        connection = get_db_connection()
+        if request.method == 'POST':
+            hostname = request.form['hostname']
+            ip_address = request.form['ip_address']
+            os = request.form['os']
+
+            with connection.cursor() as cursor:
+                cursor.execute('UPDATE hosts SET hostname=%s, ip_address=%s, os=%s WHERE id=%s', (hostname, ip_address, os, id))
+                connection.commit()
+                return redirect(url_for('hosts'))
+
+        # Fetch the host details for editing
+        with connection.cursor() as cursor:
+            cursor.execute('SELECT * FROM hosts WHERE id=%s', (id,))
+            host = cursor.fetchone()
+            return render_template('edit_host.html', title="Edit Host", host=host)
+    return redirect(url_for('login'))
+
+@app.route('/hosts/delete/<int:id>')
+def delete_host(id):
+    if 'loggedin' in session:
+        connection = get_db_connection()
+        with connection.cursor() as cursor:
+            cursor.execute('DELETE FROM hosts WHERE id=%s', (id,))
+            connection.commit()
+        return redirect(url_for('hosts'))
+    return redirect(url_for('login'))
+
+# View Proxies
+@app.route('/proxies')
+def proxies():
+    if 'loggedin' in session:
+        connection = get_db_connection()
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT * FROM proxies")
+            proxies_data = cursor.fetchall()
+            return render_template('proxies.html', title="Proxies", proxies=proxies_data)
+    return redirect(url_for('login'))
+
+# Add Proxy
+@app.route('/proxies/add', methods=['GET', 'POST'])
+def add_proxy():
+    if 'loggedin' in session:
+        connection = get_db_connection()
+        if request.method == 'POST':
+            ip_address = request.form['ip_address']
+            port = request.form['port']
+            type = request.form['type']
+            with connection.cursor() as cursor:
+                cursor.execute("INSERT INTO proxies (ip_address, port, type) VALUES (%s, %s, %s)", (ip_address, port, type))
+                connection.commit()
+            return redirect(url_for('proxies'))
+        return render_template('add_proxy.html', title="Add Proxy")
+    return redirect(url_for('login'))
+
+# Edit Proxy
+@app.route('/proxies/edit/<int:id>', methods=['GET', 'POST'])
+def edit_proxy(id):
+    if 'loggedin' in session:
+        connection = get_db_connection()
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT * FROM proxies WHERE id=%s", (id,))
+            proxy_data = cursor.fetchone()
+            if request.method == 'POST':
+                ip_address = request.form['ip_address']
+                port = request.form['port']
+                type = request.form['type']
+                cursor.execute("UPDATE proxies SET ip_address=%s, port=%s, type=%s WHERE id=%s", (ip_address, port, type, id))
+                connection.commit()
+                return redirect(url_for('proxies'))
+            return render_template('edit_proxy.html', title="Edit Proxy", proxy=proxy_data)
+    return redirect(url_for('login'))
+
+# Delete Proxy
+@app.route('/proxies/delete/<int:id>')
+def delete_proxy(id):
+    if 'loggedin' in session:
+        connection = get_db_connection()
+        with connection.cursor() as cursor:
+            cursor.execute("DELETE FROM proxies WHERE id=%s", (id,))
+            connection.commit()
+        return redirect(url_for('proxies'))
+    return redirect(url_for('login'))
+
+@app.route('/scan_proxies')
+def scan_proxies():
+    # Your code to handle proxy scanning here
+    return "Scanning proxies..."
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
