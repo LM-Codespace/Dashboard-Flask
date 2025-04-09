@@ -413,5 +413,92 @@ def check_proxy(id):
             connection.close()
     
     return redirect(url_for('proxies'))
+
+def scrape_proxies_from_urls(urls):
+    proxy_pattern = re.compile(r'\b(?:\d{1,3}\.){3}\d{1,3}:\d{2,5}\b')
+    proxies = set()
+    
+    for url in urls:
+        try:
+            headers = {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+            }
+            response = requests.get(url, headers=headers, timeout=10)
+            soup = BeautifulSoup(response.text, 'html.parser')
+            text = soup.get_text()
+            
+            found = proxy_pattern.findall(text)
+            proxies.update([p for p in found if p.count(':') == 1])
+            
+        except Exception as e:
+            print(f"Error scraping {url}: {str(e)}")
+            continue
+    
+    return [{'ip': p.split(':')[0], 'port': int(p.split(':')[1])} for p in proxies]
+
+def check_proxies(proxies, timeout=5):
+    working_proxies = []
+    
+    with concurrent.futures.ThreadPoolExecutor(max_workers=50) as executor:
+        futures = {
+            executor.submit(check_socks5_proxy, proxy['ip'], proxy['port'], timeout): proxy 
+            for proxy in proxies
+        }
+        
+        for future in concurrent.futures.as_completed(futures):
+            proxy = futures[future]
+            try:
+                is_working, latency = future.result()
+                if is_working:
+                    proxy['latency'] = latency
+                    working_proxies.append(proxy)
+            except Exception:
+                continue
+    
+    return working_proxies
+
+def check_socks5_proxy(ip, port, timeout=5):
+    try:
+        start_time = time.time()
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.settimeout(timeout)
+            s.connect((ip, port))
+            # Basic SOCKS5 handshake
+            s.sendall(b'\x05\x01\x00')
+            response = s.recv(2)
+            if response == b'\x05\x00':
+                latency = (time.time() - start_time) * 1000  # in milliseconds
+                return True, latency
+        return False, 0
+    except (socket.timeout, ConnectionRefusedError, socket.error):
+        return False, 0
+
+def save_proxies(proxies):
+    connection = None
+    try:
+        connection = get_db_connection()
+        with connection.cursor() as cursor:
+            for proxy in proxies:
+                try:
+                    cursor.execute('''
+                        INSERT INTO proxies (ip_address, port, protocol, latency, last_checked, is_active)
+                        VALUES (%s, %s, 'socks5', %s, CURRENT_TIMESTAMP, TRUE)
+                        ON CONFLICT (ip_address, port) 
+                        DO UPDATE SET 
+                            latency = EXCLUDED.latency,
+                            last_checked = EXCLUDED.last_checked,
+                            is_active = TRUE
+                    ''', (proxy['ip'], proxy['port'], proxy.get('latency', 0)))
+                except Exception as e:
+                    print(f"Error saving proxy {proxy['ip']}:{proxy['port']}: {str(e)}")
+                    continue
+        connection.commit()
+    except Exception as e:
+        print(f"Database error: {str(e)}")
+        if connection:
+            connection.rollback()
+    finally:
+        if connection:
+            connection.close()
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
