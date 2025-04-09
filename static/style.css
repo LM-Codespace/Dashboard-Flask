@@ -105,3 +105,36 @@ input[type="submit"] {
 input[type="submit"]:hover {
     background-color: #2563eb;
 }
+.proxy-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.proxy-table th, .proxy-table td {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    text-align: left;
+}
+
+.proxy-table th {
+    background-color: #f2f2f2;
+}
+
+.proxy-table tr.active {
+    background-color: #e6f7e6;
+}
+
+.proxy-table tr.inactive {
+    background-color: #ffe6e6;
+}
+
+.btn-check {
+    color: #0066cc;
+    text-decoration: none;
+    margin-right: 10px;
+}
+
+.btn-check:hover {
+    text-decoration: underline;
+}
