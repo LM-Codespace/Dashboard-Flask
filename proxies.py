@@ -18,21 +18,20 @@ def get_db_connection():
     }
     return pymysql.connect(**DB_CONFIG)
 
-# This is the endpoint you're likely looking for
 @proxies_bp.route('/scan_proxies', methods=['POST'])
 def scan_proxies():
-    url = request.form.get('proxy_url')  # Get the URL entered by the user
-    print(f"Received URL: {url}")  # This will help check if the URL is being received correctly
+    url = request.form.get('proxy_url')  # This fetches the URL from the form
+    print(f"Received URL: {url}")  # Debugging line to check if URL is passed correctly
+    
     if url:
-        proxies = scrape_proxies(url)  # Call the scraping function
+        proxies = scrape_proxies(url)  # Scrape proxies if URL is provided
         if proxies:
-            print(f"Found {len(proxies)} proxies to add.")
             connection = get_db_connection()
             with connection.cursor() as cursor:
                 for proxy in proxies:
-                    ip, port = proxy.split(":")  # Assuming the proxy is in the format "IP:PORT"
-                    cursor.execute("INSERT INTO proxies (ip_address, port, status) VALUES (%s, %s, %s)",
-                                   (ip, port, 'UNKNOWN'))  # Insert with status 'UNKNOWN'
+                    ip, port = proxy.split(":")
+                    cursor.execute("INSERT INTO proxies (ip_address, port, status) VALUES (%s, %s, %s)", 
+                                   (ip, port, 'UNKNOWN'))  # Insert proxies with 'UNKNOWN' status
                 connection.commit()
             flash(f"{len(proxies)} proxies scraped and added!")
         else:
