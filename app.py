@@ -28,6 +28,75 @@ DB_CONFIG = {
 def get_db_connection():
     return pymysql.connect(**DB_CONFIG)
 
+# Global variable to track proxy scanning status
+scanning_status = {
+    'total': 0,
+    'scanned': 0,
+    'live': 0
+}
+
+# Function to check if a SOCKS5 proxy is live
+def check_socks5_proxy(ip, port):
+    try:
+        # Set up a SOCKS5 proxy with requests
+        proxies = {
+            "http": f"socks5://{ip}:{port}",
+            "https": f"socks5://{ip}:{port}"
+        }
+        
+        # Test the proxy by trying to fetch a webpage (e.g., google.com)
+        response = requests.get("http://www.google.com", proxies=proxies, timeout=5)
+        
+        # If status code is 200, proxy is live
+        if response.status_code == 200:
+            return True
+    except requests.RequestException as e:
+        # If any error occurs (e.g., timeout, unreachable proxy)
+        pass
+    return False
+
+# Proxy scanning logic in the background
+def scan_proxies_in_background(proxies):
+    global scanning_status
+    scanning_status['total'] = len(proxies)
+    scanning_status['scanned'] = 0
+    scanning_status['live'] = 0
+
+    for ip, port in proxies:
+        scanning_status['scanned'] += 1
+        if check_socks5_proxy(ip, port):
+            scanning_status['live'] += 1
+        time.sleep(1)  # Pause for 1 second to avoid overwhelming the target server
+    
+    logger.info(f"Scanning completed: {scanning_status['live']} live proxies found")
+
+# Route to initiate proxy scanning in the background
+@app.route('/scan_proxies')
+def scan_proxies():
+    # Fetch proxies from database to scan
+    connection = get_db_connection()
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT ip_address, port FROM proxies WHERE type='socks5'")
+        proxies = cursor.fetchall()
+    
+    # Start scanning in a background thread
+    threading.Thread(target=scan_proxies_in_background, args=(proxies,)).start()
+
+    # Redirect to the proxies page to display status
+    return redirect(url_for('proxies'))
+
+# View Proxies with scanning status
+@app.route('/proxies')
+def proxies():
+    if 'loggedin' in session:
+        connection = get_db_connection()
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT * FROM proxies")
+            proxies_data = cursor.fetchall()
+        # Display scanning status on the template
+        return render_template('proxies.html', title="Proxies", proxies=proxies_data, scanning_status=scanning_status)
+    return redirect(url_for('login'))
+
 def process_ip_range(start_ip, end_ip, os):
     connection = get_db_connection()
     cursor = connection.cursor()
