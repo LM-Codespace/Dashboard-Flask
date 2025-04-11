@@ -151,40 +151,29 @@ def check_proxies():
     check_and_update_proxies()
     return redirect(url_for('proxies.proxies'))
 
+# Route to delete dead proxies and reindex
 @proxies_bp.route('/delete_dead_proxies', methods=['POST'])
 def delete_dead_proxies():
     connection = get_db_connection()
     try:
         with connection.cursor() as cursor:
-            # Step 1: Set proxy_id to NULL for all scan records referencing inactive proxies
-            cursor.execute("""
-                UPDATE scan 
-                SET proxy_id = NULL 
-                WHERE proxy_id IN (SELECT id FROM proxies WHERE status = %s)
-            """, ('inactive',))
+            # Remove or update dependent foreign key references first
+            cursor.execute("UPDATE scan SET proxy_id = NULL WHERE proxy_id IN (SELECT id FROM proxies WHERE status = %s)", ('inactive',))
 
-            # Step 2: Delete the proxies that are inactive
+            # Now delete the inactive proxies
             cursor.execute("DELETE FROM proxies WHERE status = %s", ('inactive',))
-            
-            # Step 3: Commit changes to the database
-            connection.commit()
 
-            # Step 4: Reset AUTO_INCREMENT to the highest ID value in the table
-            cursor.execute("""
-                SELECT MAX(id) FROM proxies;
-            """)
-            max_id = cursor.fetchone()[0]
-            
-            # If the table is empty, reset to 1, otherwise set to the next available ID
-            new_auto_increment = max_id + 1 if max_id is not None else 1
+            # Reset the AUTO_INCREMENT value
+            cursor.execute("ALTER TABLE proxies AUTO_INCREMENT = 1;")
 
-            cursor.execute(f"ALTER TABLE proxies AUTO_INCREMENT = {new_auto_increment};")
+            # Optionally, reindex proxies (if required)
+            cursor.execute("SET @i := 0;")
+            cursor.execute("UPDATE proxies SET id = (@i := @i + 1);")
 
-        print(f"Dead proxies deleted and AUTO_INCREMENT reset successfully.")
-    
+        connection.commit()
+        print("Dead proxies deleted, foreign keys updated, and IDs reindexed successfully.")
     except Exception as e:
         print(f"Error occurred while deleting dead proxies: {e}")
-    
     finally:
         connection.close()
     
