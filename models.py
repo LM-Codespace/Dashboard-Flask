@@ -5,14 +5,16 @@ from datetime import datetime
 db = SQLAlchemy()
 
 class Host(db.Model):
+    __tablename__ = 'hosts'  # Ensure this is 'hosts' to match your MySQL table name
     id = db.Column(db.Integer, primary_key=True)
-    ip_address = db.Column(db.String(100), nullable=False, unique=True)  # Unique IP address
-    resolved_hostname = db.Column(db.String(100), nullable=True)  # Store resolved hostname (DNS)
+    ip_address = db.Column(db.String(50), nullable=False, unique=True)  # Unique IP address
+    resolved_hostname = db.Column(db.String(100), nullable=True)
     open_ports = db.Column(db.String(100), nullable=True)
     location = db.Column(db.String(100), nullable=True)
 
     def __repr__(self):
         return f'<Host {self.ip_address}>'
+
 
 
 class Proxies(db.Model):
