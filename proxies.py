@@ -157,7 +157,7 @@ def delete_dead_proxies():
     connection = get_db_connection()
     try:
         with connection.cursor() as cursor:
-            cursor.execute("DELETE FROM proxies WHERE status = %s", ('dead',))
+            cursor.execute("DELETE FROM proxies WHERE status = %s", ('inactive',))
             cursor.execute("SET @i := 0;")
             cursor.execute("UPDATE proxies SET id = (@i := @i + 1);")
             cursor.execute("ALTER TABLE proxies AUTO_INCREMENT = 1;")
