@@ -1,10 +1,11 @@
 from flask import Flask, session, redirect, url_for, render_template
+from flask_sqlalchemy import SQLAlchemy
 import logging
 from auth import auth_bp
 from hosts import hosts_bp
 from proxies import proxies_bp
-from models import db  # Import db from models.py after creating the app
-from flask_sqlalchemy import SQLAlchemy
+from scans import scans_bp  # Import scans blueprint after app and db initialization
+from models import db  # Import db from models.py
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -23,7 +24,6 @@ def create_app():
     db.init_app(app)
 
     # Register blueprints
-    from scans import scans_bp  # Import scans blueprint after app and db initialization
     app.register_blueprint(auth_bp, url_prefix='/auth')
     app.register_blueprint(hosts_bp, url_prefix='/hosts')
     app.register_blueprint(proxies_bp, url_prefix='/proxies')
