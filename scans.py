@@ -10,12 +10,34 @@ def get_valid_proxies():
     # Returns a list of active SOCKS5 proxies from the database
     return [p for p in Proxies.query.filter_by(status='active', type='SOCKS5')]
 
-@scans_bp.route('/')
+@scans_bp.route('/', methods=['GET', 'POST'])
 def run_scan_view():
-    # Retrieve recent scans or other data to display
-    recent_scans = Scan.query.order_by(Scan.date.desc()).limit(5).all()  # Example: load recent scans
-    hosts = Host.query.all()  # Get all hosts from the database
-    return render_template('scans.html', recent_scans=recent_scans, hosts=hosts)
+    if request.method == 'POST':
+        # Handle scan initiation here
+        ip_address = request.form.get('ip_address')
+        proxy_id = request.form.get('proxy_id')
+        scan_type = request.form.get('scan_type')
+
+        # Perform the scan logic here, e.g., start nmap scan, etc.
+        new_scan = Scan(
+            ip_address=ip_address,
+            proxy_id=proxy_id,
+            scan_type=scan_type,
+            status='In Progress',
+            date=datetime.utcnow()
+        )
+        db.session.add(new_scan)
+        db.session.commit()
+
+        flash('Scan initiated successfully!', 'success')
+        return redirect(url_for('scans.run_scan_view'))  # Redirect to scans page
+
+    # Fetch available IPs (from Host) and proxies (from Proxies)
+    hosts = Host.query.all()
+    proxies = Proxies.query.all()
+
+    # Pass the data to the template
+    return render_template('scans.html', hosts=hosts, proxies=proxies)
 
 @scans_bp.route('/run', methods=['POST'])
 def run_scan():
