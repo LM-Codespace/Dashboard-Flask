@@ -1,20 +1,66 @@
-<table>
-    <thead>
-        <tr>
-            <th>Host</th>
-            <th>Resolved Hostname</th>
-            <th>Open Ports</th>
-            <th>Location</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for host in hosts %}
-            <tr>
-                <td>{{ host.name }}</td>
-                <td>{{ host.resolved_hostname }}</td>
-                <td>{{ host.open_ports }}</td>
-                <td>{{ host.location }}</td>
-            </tr>
-        {% endfor %}
-    </tbody>
-</table>
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="scan-history-container">
+        <h1>Scan History</h1>
+        <p>Below are the results of all past scans with relevant details.</p>
+
+        <!-- Scan Results Table -->
+        <div class="table-container">
+            <table class="scan-history-table">
+                <thead>
+                    <tr>
+                        <th>Scan ID</th>
+                        <th>IP Address</th>
+                        <th>Scan Type</th>
+                        <th>Status</th>
+                        <th>Scan Date</th>
+                        <th>Proxy Used</th>
+                        <th>Results</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for scan in scans %}
+                        <tr class="{% if scan.status == 'Completed' %}active{% else %}inactive{% endif %}">
+                            <td>{{ scan.id }}</td>
+                            <td>{{ scan.ip_address }}</td>
+                            <td>{{ scan.scan_type }}</td>
+                            <td>
+                                {% if scan.status == 'In Progress' %}
+                                    <span class="status-in-progress">{{ scan.status }}</span>
+                                {% elif scan.status == 'Completed' %}
+                                    <span class="status-completed">{{ scan.status }}</span>
+                                {% else %}
+                                    <span class="status-failed">{{ scan.status }}</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ scan.date.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+
+                            <!-- Display the proxy details if used -->
+                            <td>
+                                {% if scan.proxy_id %}
+                                    {% set proxy = scan.proxy_id %}
+                                    {% if proxy %}
+                                        {{ proxy.ip_address }}:{{ proxy.port }} <!-- Display proxy IP and port -->
+                                    {% else %}
+                                        No proxy used
+                                    {% endif %}
+                                {% else %}
+                                    No proxy used
+                                {% endif %}
+                            </td>
+
+                            <td>
+                                {% if scan.status == 'Completed' %}
+                                    {{ scan.results if scan.results else "No results available yet." }}
+                                {% else %}
+                                    No results available yet.
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}
