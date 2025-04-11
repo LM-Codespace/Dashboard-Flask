@@ -1,12 +1,10 @@
 # scans.py
 from flask import Blueprint, render_template, request, redirect, url_for, flash
-from datetime import datetime
 import socket
 import requests
 import geocoder  # To get location info based on IP
 
 # Assuming you're using an ORM like SQLAlchemy
-# Remove this line: from app import db
 from models import Host, Scan  # Assuming you have a Scan model to track scan results
 
 scans_bp = Blueprint('scans', __name__, url_prefix='/scans')
