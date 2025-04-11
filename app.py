@@ -3,10 +3,14 @@ import logging
 from auth import auth_bp
 from hosts import hosts_bp
 from proxies import proxies_bp
+from flask_sqlalchemy import SQLAlchemy
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+# Initialize db (but don't import it yet)
+db = SQLAlchemy()
 
 # Create app factory function
 def create_app():
@@ -17,12 +21,11 @@ def create_app():
     app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://flaskuser:flaskpassword@localhost/flask_dashboard'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-    # Import db here to avoid circular import
-    from flask_sqlalchemy import SQLAlchemy
-    db = SQLAlchemy(app)
+    # Initialize db here
+    db.init_app(app)
 
     # Register blueprints
-    from scans import scans_bp  # Import after creating app
+    from scans import scans_bp  # Import scans after creating the app
     app.register_blueprint(auth_bp, url_prefix='/auth')
     app.register_blueprint(hosts_bp, url_prefix='/hosts')
     app.register_blueprint(proxies_bp, url_prefix='/proxies')
