@@ -16,8 +16,23 @@
 
         <form method="POST">
             <div class="form-group">
+                <label for="scan_type">Scan Type:</label>
+                <select id="scan_type" name="scan_type" class="form-control" required>
+                    <option value="port_scan">Port Scan</option>
+                    <option value="hostname_scan">Hostname Scan</option>
+                    <option value="os_detection">OS Detection</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="scan_all">Scan All Hosts:</label>
+                <input type="checkbox" id="scan_all" name="scan_all" value="true">
+                <small class="form-text text-muted">Check this to scan all hosts using all available proxies.</small>
+            </div>
+
+            <div class="form-group" id="host-selection">
                 <label for="ip_address">IP Address:</label>
-                <select id="ip_address" name="ip_address" class="form-control" required>
+                <select id="ip_address" name="ip_address" class="form-control">
                     <option value="">Select IP Address</option>
                     {% for host in hosts %}
                         <option value="{{ host.ip_address }}">{{ host.ip_address }}</option>
@@ -27,7 +42,7 @@
                 </select>
             </div>
 
-            <div class="form-group">
+            <div class="form-group" id="proxy-selection">
                 <label for="proxy_id">Proxy:</label>
                 <select id="proxy_id" name="proxy_id" class="form-control">
                     <option value="">No Proxy (Direct Connection)</option>
@@ -38,15 +53,6 @@
                     {% else %}
                         <option value="" disabled>No proxies available</option>
                     {% endfor %}
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label for="scan_type">Scan Type:</label>
-                <select id="scan_type" name="scan_type" class="form-control" required>
-                    <option value="port_scan">Port Scan</option>
-                    <option value="hostname_scan">Hostname Scan</option>
-                    <option value="os_detection">OS Detection</option>
                 </select>
             </div>
 
@@ -69,4 +75,13 @@
             <a href="{{ url_for('scans.reports') }}" class="btn btn-secondary">View Scan Reports</a>
         </div>
     </div>
+
+    <script>
+        // JavaScript to toggle IP and Proxy selection based on the "Scan All" checkbox
+        document.getElementById('scan_all').addEventListener('change', function() {
+            var isChecked = this.checked;
+            document.getElementById('host-selection').style.display = isChecked ? 'none' : 'block';
+            document.getElementById('proxy-selection').style.display = isChecked ? 'none' : 'block';
+        });
+    </script>
 {% endblock %}
