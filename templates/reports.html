@@ -15,7 +15,7 @@
                         <th>Scan Type</th>
                         <th>Status</th>
                         <th>Date</th>
-                        <th>Proxy Used</th>  <!-- Add Proxy column -->
+                        <th>Proxy Used</th>
                         <th>Results</th>
                     </tr>
                 </thead>
@@ -25,31 +25,16 @@
                             <td>{{ scan.id }}</td>
                             <td>{{ scan.ip_address }}</td>
                             <td>{{ scan.scan_type }}</td>
-                            <td>
-                                {% if scan.status == 'In Progress' %}
-                                    <span class="status-in-progress">{{ scan.status }}</span>
-                                {% elif scan.status == 'Completed' %}
-                                    <span class="status-completed">{{ scan.status }}</span>
-                                {% else %}
-                                    <span class="status-failed">{{ scan.status }}</span>
-                                {% endif %}
-                            </td>
+                            <td>{{ scan.status }}</td>
                             <td>{{ scan.date.strftime('%Y-%m-%d %H:%M:%S') }}</td>
-
-                            <!-- Display the proxy details if used -->
                             <td>
                                 {% if scan.proxy_id %}
-                                    {% set proxy = scan.proxy_id %}
-                                    {% if proxy %}
-                                        {{ proxy.ip_address }}:{{ proxy.port }} <!-- Display proxy IP and port -->
-                                    {% else %}
-                                        No proxy used
-                                    {% endif %}
+                                    {% set proxy = scan.proxy %}
+                                    {{ proxy.ip_address }}:{{ proxy.port }} ({{ proxy.type }})
                                 {% else %}
                                     No proxy used
                                 {% endif %}
                             </td>
-
                             <td>
                                 {% if scan.status == 'Completed' %}
                                     {{ scan.results if scan.results else "No results available yet." }}
