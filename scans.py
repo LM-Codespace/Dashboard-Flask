@@ -60,18 +60,24 @@ def run_scan():
 
     if scan_all:
         print("[BULK SCAN] Starting scan of all hosts using all proxies.")
+        
+        # Fetch all hosts and proxies
         hosts = Host.query.with_entities(Host.ip_address).distinct().all()
         proxies = Proxies.query.filter_by(status='active', type='SOCKS5').all()  # Use Proxies instead of Proxy
 
+        # Check if there are hosts or proxies available
         if not hosts or not proxies:
             flash("Missing hosts or proxies!", "danger")
             return redirect(url_for('scans.run_scan_view'))
 
         for idx, host in enumerate(hosts):
+            # Ensure a proxy is assigned to each host, even when proxies are limited
             proxy = proxies[idx % len(proxies)]
+            
+            # Create a new scan for each host with the selected proxy
             new_scan = Scan(
-                ip_address=host.ip_address,
-                proxy_id=proxy.id,
+                ip_address=host.ip_address,  # Ensure host IP is correctly assigned
+                proxy_id=proxy.id,  # Ensure proxy is assigned correctly
                 scan_type=scan_type,
                 status='In Progress',
                 date=datetime.utcnow()
@@ -80,16 +86,25 @@ def run_scan():
             db.session.commit()
 
             print(f"[Bulk Scan] Created scan {new_scan.id} for IP {host.ip_address} using Proxy ID {proxy.id}")
+            
+            # Start the scan in a new thread
             t = threading.Thread(target=perform_scan, args=(new_scan.id, host.ip_address, proxy.id, scan_type))
-            t.daemon = True
+            t.daemon = True  # Ensure the thread exits when the main program exits
             t.start()
 
         flash(f'Bulk scan initiated for {len(hosts)} hosts!', 'info')
         return redirect(url_for('scans.view_scans'))
 
+    # Single scan scenario
     ip_address = request.form['ip_address']
-    proxy_id = request.form.get('proxy_id')
+    proxy_id = request.form.get('proxy_id')  # Get the proxy ID, may be None if not selected
 
+    # Ensure a valid proxy ID is selected for single scans
+    if not proxy_id:
+        flash("Please select a proxy for the scan.", "danger")
+        return redirect(url_for('scans.run_scan_view'))
+
+    # Create a new scan record
     new_scan = Scan(
         ip_address=ip_address,
         proxy_id=proxy_id,
@@ -101,9 +116,11 @@ def run_scan():
     db.session.commit()
     scan_id = new_scan.id
 
-    print(f"[Single Scan] Starting scan {scan_id} for IP: {ip_address}")
+    print(f"[Single Scan] Starting scan {scan_id} for IP: {ip_address} using Proxy ID {proxy_id}")
+    
+    # Start the scan in a new thread
     t = threading.Thread(target=perform_scan, args=(scan_id, ip_address, proxy_id, scan_type))
-    t.daemon = True
+    t.daemon = True  # Ensure the thread exits when the main program exits
     t.start()
 
     flash('Scan started successfully!', 'success')
