@@ -6,7 +6,7 @@
 
     <!-- Add Host Form -->
     <h2>Add New Host</h2>
-    <form method="POST" action="/hosts">
+    <form method="POST" action="/hosts/add">
         <div class="form-group">
             <label for="hostname">Hostname</label>
             <input type="text" class="form-control" id="hostname" name="hostname" required>
@@ -62,12 +62,12 @@
                 {% if hosts %}
                     {% for host in hosts %}
                         <tr>
-                            <td>{{ host.resolved_hostname or host.ip_address }}</td>
-                            <td>{{ host.ip_address }}</td>
-                            <td>{{ host.operating_system }}</td>
+                            <td>{{ host[1] }}</td>  <!-- hostname -->
+                            <td>{{ host[2] }}</td>  <!-- ip_address -->
+                            <td>{{ host[3] }}</td>  <!-- os -->
                             <td>
-                                <a href="/hosts/edit/{{ host.id }}" class="btn btn-sm btn-warning">Edit</a>
-                                <a href="/hosts/delete/{{ host.id }}" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?')">Delete</a>
+                                <a href="/hosts/edit/{{ host[0] }}" class="btn btn-sm btn-warning">Edit</a>
+                                <a href="/hosts/delete/{{ host[0] }}" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?')">Delete</a>
                             </td>
                         </tr>
                     {% endfor %}
