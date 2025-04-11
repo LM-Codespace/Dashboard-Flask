@@ -75,11 +75,13 @@ def run_scan():
 
         # Start the scan in a separate thread to avoid blocking
         t = threading.Thread(target=perform_scan, args=(scan_id, ip_address, proxy_id, scan_type))
+        print(f"Thread created for scan {scan_id}.")
         t.start()
 
         flash('Scan started successfully!', 'success')
         return redirect(url_for('scans.view_scans'))
     return redirect(url_for('auth.login'))
+
 
 @scans_bp.route('/history')
 def scan_history():
@@ -92,7 +94,6 @@ def reports():
 
 def perform_scan(scan_id, ip_address, proxy_id, scan_type):
     print(f"Performing scan for {scan_id} on {ip_address} with scan type {scan_type}.")
-    # Perform the scanning logic based on scan type
     nm = nmap.PortScanner()
 
     try:
