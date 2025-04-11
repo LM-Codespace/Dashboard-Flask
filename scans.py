@@ -70,6 +70,9 @@ def run_scan():
         db.session.commit()
         scan_id = new_scan.id  # Get the newly created scan's ID
 
+        # Debug print to confirm the scan data
+        print(f"Starting scan {scan_id} for IP: {ip_address} with scan type {scan_type}.")
+
         # Start the scan in a separate thread to avoid blocking
         t = threading.Thread(target=perform_scan, args=(scan_id, ip_address, proxy_id, scan_type))
         t.start()
@@ -88,23 +91,19 @@ def reports():
     return render_template('reports.html')
 
 def perform_scan(scan_id, ip_address, proxy_id, scan_type):
+    print(f"Performing scan for {scan_id} on {ip_address} with scan type {scan_type}.")
     # Perform the scanning logic based on scan type
     nm = nmap.PortScanner()
 
     try:
         # Start scanning based on the scan type
         if scan_type == 'port_scan':
-            if proxy_id:
-                # Implement proxy handling here (e.g., using the proxy for requests)
-                pass
-            
-            # Run the Nmap scan
-            nm.scan(ip_address, '1-65535')
+            print(f"Running port scan for {ip_address}.")
+            nm.scan(ip_address, '1-65535')  # Scan all ports 1-65535
 
             # Example: Collect scan results and process them
             scan_results = nm[ip_address]  # Results for the scanned IP
-
-            # You can add further processing of the scan results if needed
+            print(f"Scan results for {ip_address}: {scan_results}")
 
         # After completing the scan, update the status in the database
         with db.session.begin():
@@ -115,10 +114,9 @@ def perform_scan(scan_id, ip_address, proxy_id, scan_type):
         print(f"Scan {scan_id} completed successfully.")
 
     except Exception as e:
-        print(f"Scan failed: {e}")
+        print(f"Scan failed for {ip_address}: {e}")
         # If the scan fails, mark it as failed in the database
         with db.session.begin():
             scan = Scan.query.get(scan_id)
             scan.status = 'Failed'
             db.session.commit()
-
