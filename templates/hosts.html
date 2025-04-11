@@ -55,6 +55,12 @@
                     <th>Hostname</th>
                     <th>IP Address</th>
                     <th>Operating System</th>
+                    <th>Status</th>
+                    <th>Ports</th>
+                    <th>Last Scanned</th>
+                    <th>Open Ports</th>
+                    <th>Resolved Hostname</th>
+                    <th>Location</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -62,18 +68,24 @@
                 {% if hosts %}
                     {% for host in hosts %}
                         <tr>
-                            <td>{{ host[1] }}</td>  <!-- hostname -->
-                            <td>{{ host[2] }}</td>  <!-- ip_address -->
-                            <td>{{ host[3] }}</td>  <!-- os -->
+                            <td>{{ host.hostname }}</td>  <!-- hostname -->
+                            <td>{{ host.ip_address }}</td>  <!-- ip_address -->
+                            <td>{{ host.os }}</td>  <!-- os -->
+                            <td>{{ host.status }}</td>  <!-- status -->
+                            <td>{{ host.ports }}</td>  <!-- ports -->
+                            <td>{{ host.last_scanned }}</td>  <!-- last_scanned -->
+                            <td>{{ host.open_ports }}</td>  <!-- open_ports -->
+                            <td>{{ host.resolved_hostname }}</td>  <!-- resolved_hostname -->
+                            <td>{{ host.location }}</td>  <!-- location -->
                             <td>
-                                <a href="/hosts/edit/{{ host[0] }}" class="btn btn-sm btn-warning">Edit</a>
-                                <a href="/hosts/delete/{{ host[0] }}" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?')">Delete</a>
+                                <a href="/hosts/edit/{{ host.id }}" class="btn btn-sm btn-warning">Edit</a>
+                                <a href="/hosts/delete/{{ host.id }}" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?')">Delete</a>
                             </td>
                         </tr>
                     {% endfor %}
                 {% else %}
                     <tr>
-                        <td colspan="4">No hosts found</td>
+                        <td colspan="10">No hosts found</td>
                     </tr>
                 {% endif %}
             </tbody>
