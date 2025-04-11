@@ -65,29 +65,29 @@
                 </tr>
             </thead>
             <tbody>
-                {% if hosts %}
-                    {% for host in hosts %}
-                        <tr>
-                            <td>{{ host.hostname }}</td>
-                            <td>{{ host.ip_address }}</td>
-                            <td>{{ host.os }}</td>
-                            <td>{{ host.status }}</td>
-                            <td>{{ host.ports or 'N/A' }}</td>
-                            <td>{{ host.last_scanned.strftime('%Y-%m-%d %H:%M:%S') if host.last_scanned else 'N/A' }}</td>
-                            <td>{{ host.open_ports or 'N/A' }}</td>
-                            <td>{{ host.resolved_hostname or 'N/A' }}</td>
-                            <td>{{ host.location or 'N/A' }}</td>
-                            <td>
-                                <a href="/hosts/edit/{{ host.id }}" class="btn btn-sm btn-warning">Edit</a>
-                                <a href="/hosts/delete/{{ host.id }}" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?')">Delete</a>
-                            </td>
-                        </tr>
-                    {% endfor %}
-                {% else %}
-                    <tr>
-                        <td colspan="10">No hosts found</td>
-                    </tr>
-                {% endif %}
+{% if hosts %}
+    {% for host in hosts %}
+        <tr>
+            <td>{{ host['hostname'] }}</td>
+            <td>{{ host['ip_address'] }}</td>
+            <td>{{ host['os'] }}</td>
+            <td>{{ host['status'] }}</td>
+            <td>{{ host['ports'] }}</td>
+            <td>{{ host['last_scanned'].strftime('%Y-%m-%d %H:%M:%S') if host['last_scanned'] else 'N/A' }}</td>
+            <td>{{ host['open_ports'] or 'N/A' }}</td>
+            <td>{{ host['resolved_hostname'] or 'N/A' }}</td>
+            <td>{{ host['location'] or 'N/A' }}</td>
+            <td>
+                <a href="/hosts/edit/{{ host['id'] }}" class="btn btn-sm btn-warning">Edit</a>
+                <a href="/hosts/delete/{{ host['id'] }}" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?')">Delete</a>
+            </td>
+        </tr>
+    {% endfor %}
+{% else %}
+    <tr>
+        <td colspan="10">No hosts found</td>
+    </tr>
+{% endif %}
             </tbody>
         </table>
     </div>
