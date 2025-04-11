@@ -157,13 +157,17 @@ def delete_dead_proxies():
     connection = get_db_connection()
     try:
         with connection.cursor() as cursor:
-            # Remove or update dependent foreign key references first
-            cursor.execute("UPDATE scan SET proxy_id = NULL WHERE proxy_id IN (SELECT id FROM proxies WHERE status = %s)", ('inactive',))
+            # Update the scan table to set proxy_id to NULL where the proxy is dead
+            cursor.execute("""
+                UPDATE scan 
+                SET proxy_id = NULL 
+                WHERE proxy_id IN (SELECT id FROM proxies WHERE status = %s)
+            """, ('inactive',))
 
-            # Now delete the inactive proxies
+            # Now, delete the dead proxies
             cursor.execute("DELETE FROM proxies WHERE status = %s", ('inactive',))
 
-            # Reset the AUTO_INCREMENT value
+            # Reset the AUTO_INCREMENT value for proxies table
             cursor.execute("ALTER TABLE proxies AUTO_INCREMENT = 1;")
 
             # Optionally, reindex proxies (if required)
@@ -178,4 +182,5 @@ def delete_dead_proxies():
         connection.close()
     
     return redirect(url_for('proxies.proxies'))
+
 
