@@ -3,9 +3,7 @@ from datetime import datetime
 import socket
 import requests
 import geocoder  # To get location info based on IP
-
-# Import models here to avoid circular import
-from models import Host, Scan, db
+from models import Host, Scan, Proxies, db  # Import Proxies here
 
 scans_bp = Blueprint('scans', __name__)
 
