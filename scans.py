@@ -97,33 +97,38 @@ def reports():
 
 
 def perform_scan(scan_id, ip_address, proxy_id, scan_type):
-    print(f"Performing scan for {scan_id} on {ip_address} with scan type {scan_type}.")
+    print(f"Starting scan for Scan ID {scan_id}, IP Address {ip_address}, Proxy ID {proxy_id}, Scan Type {scan_type}.")
     nm = nmap.PortScanner()
 
     try:
-        # Get the proxy details if a proxy is provided
-        proxy = None
-        if proxy_id:
-            proxy = Proxies.query.get(proxy_id)
-            if proxy and proxy.status == 'active':
-                print(f"Using proxy {proxy.ip_address} for the scan.")
+        # Log starting the scan
+        print(f"Initiating {scan_type} for {ip_address}.")
         
-        # If a proxy is set, use it in the nmap scan
-        if proxy:
-            proxy_address = f"{proxy.ip_address}:{proxy.port}"
-            print(f"Using proxy {proxy_address}")
-            nm.scan(ip_address, '1-65535', arguments=f'--proxy {proxy_address}')
-        else:
-            nm.scan(ip_address, '1-65535')  # Scan all ports 1-65535 without a proxy
+        # Start scanning based on the scan type
+        if scan_type == 'port_scan':
+            print(f"Running port scan for {ip_address}.")
+            nm.scan(ip_address, '1-65535')  # Scan all ports 1-65535
+            print(f"Scan results for {ip_address}: {nm[ip_address]}")
 
-        # Example: Collect scan results and process them
-        scan_results = nm[ip_address]  # Results for the scanned IP
-        open_ports = scan_results.get('tcp', {}).keys()  # Get all open TCP ports
+            # Example: Collect scan results and process them
+            scan_results = nm[ip_address]
+            open_ports = scan_results.get('tcp', {}).keys()  # Get all open TCP ports
 
-        # Convert open ports to a string
-        results_str = ', '.join(str(port) for port in open_ports)
+            # Convert open ports to a string
+            results_str = ', '.join(str(port) for port in open_ports)
 
-        print(f"Scan results for {ip_address}: {results_str}")
+            print(f"Scan results for {ip_address}: {results_str}")
+
+        elif scan_type == 'hostname_scan':
+            print(f"Running hostname scan for {ip_address}.")
+            # Implement hostname resolution logic (e.g., using socket.gethostbyaddr)
+            try:
+                resolved_hostname = socket.gethostbyaddr(ip_address)
+                results_str = resolved_hostname[0]  # Get the primary hostname
+                print(f"Resolved hostname for {ip_address}: {results_str}")
+            except socket.herror as e:
+                print(f"Hostname resolution failed for {ip_address}: {e}")
+                results_str = "Failed to resolve hostname"
 
         # After completing the scan, update the status in the database
         with db.session.begin():
@@ -140,5 +145,4 @@ def perform_scan(scan_id, ip_address, proxy_id, scan_type):
         with db.session.begin():
             scan = Scan.query.get(scan_id)
             scan.status = 'Failed'
-            scan.results = str(e)  # Store the error message
             db.session.commit()
