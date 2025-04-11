@@ -1,7 +1,6 @@
 from flask import Flask, session, redirect, url_for, render_template
-import pymysql
 import logging
-from scans import scans_bp
+import pymysql
 from auth import auth_bp
 from hosts import hosts_bp
 from proxies import proxies_bp
@@ -33,6 +32,7 @@ def create_app():
     db = SQLAlchemy(app)
 
     # Register blueprints
+    from scans import scans_bp  # Import here after creating app
     app.register_blueprint(auth_bp, url_prefix='/auth')
     app.register_blueprint(hosts_bp, url_prefix='/hosts')
     app.register_blueprint(proxies_bp, url_prefix='/proxies')
