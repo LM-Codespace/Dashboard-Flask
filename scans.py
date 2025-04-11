@@ -1,3 +1,4 @@
+# scans.py
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from datetime import datetime
 import socket
@@ -5,7 +6,7 @@ import requests
 import geocoder  # To get location info based on IP
 
 # Assuming you're using an ORM like SQLAlchemy
-from app import db
+# Remove this line: from app import db
 from models import Host, Scan  # Assuming you have a Scan model to track scan results
 
 scans_bp = Blueprint('scans', __name__, url_prefix='/scans')
@@ -16,6 +17,8 @@ def get_valid_proxies():
 
 @scans_bp.route('/')
 def run_scan_view():
+    from app import db  # Import here to avoid circular import
+
     # Get recent scans and hosts to select from
     recent_scans = Scan.query.order_by(Scan.date.desc()).limit(5).all()  # Show last 5 scans
     hosts = Host.query.all()  # Get all hosts from the database
@@ -23,6 +26,8 @@ def run_scan_view():
 
 @scans_bp.route('/run', methods=['POST'])
 def run_scan():
+    from app import db  # Import here to avoid circular import
+
     selected_hosts = request.form.getlist('hosts')  # Get selected host IDs
     scan_type = request.form.get('scan_type')  # The type of scan selected (e.g., "hostname", "port_check")
 
@@ -92,11 +97,14 @@ def run_scan():
 # View history of scans (as before)
 @scans_bp.route('/history')
 def scan_history():
+    from app import db  # Import here to avoid circular import
     scans = Scan.query.order_by(Scan.date.desc()).all()  # Get all scans, ordered by date
     return render_template('scan_history.html', scans=scans)
 
 @scans_bp.route('/report/<int:scan_id>')
 def view_report(scan_id):
+    from app import db  # Import here to avoid circular import
+
     scan = Scan.query.get(scan_id)  # Get the scan object from the DB
     if not scan:
         flash(f'Scan ID {scan_id} not found.', 'error')
@@ -109,6 +117,7 @@ def view_report(scan_id):
 
 @scans_bp.route('/reports')
 def reports():
+    from app import db  # Import here to avoid circular import
     # Here you can aggregate or filter reports as needed
     scans = Scan.query.order_by(Scan.date.desc()).all()  # Get all scans, ordered by date
     return render_template('reports.html', scans=scans)
