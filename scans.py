@@ -154,7 +154,7 @@ def run_scan_view():
         try:
             db.session.add(new_scan)
             db.session.commit()
-            return redirect(url_for('scans.reports'))
+            return redirect(url_for('scans.reports'))  # Updated to 'scans.reports'
         except Exception as e:
             db.session.rollback()
             return f"An error occurred: {str(e)}"
@@ -162,6 +162,13 @@ def run_scan_view():
     hosts = Host.query.all()
     proxies = Proxies.query.filter_by(status='active', type='SOCKS5').all()
     return render_template('scans.html', hosts=hosts, proxies=proxies)
+
+# New route for reports page (this was missing)
+@scans_bp.route('/reports', methods=['GET'])
+def reports():
+    """View the scan reports"""
+    scans = Scan.query.all()  # You can refine this query based on your needs
+    return render_template('reports.html', scans=scans)
 
 # Route to handle running a scan (single scan or bulk scan)
 @scans_bp.route('/run', methods=['POST'])
