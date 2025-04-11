@@ -111,10 +111,11 @@ def test_proxy_alive(proxy):
         output = result.stdout.decode()
         print(f"hping3 output for {proxy_ip}:{proxy_port}:\n{output}")
 
-        return "RTT" in output
+        return "flags=SA" in output or "rtt=" in output
     except Exception as e:
         print(f"Error testing proxy {proxy['ip_address']}:{proxy['port']}: {e}")
         return False
+
 
 # Function to check and update proxy status
 def check_and_update_proxies():
