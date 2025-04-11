@@ -50,7 +50,7 @@ scan_handlers = {
 
 # Helper function to get proxy by ID
 def get_proxy_by_id(proxy_id):
-    return Proxies.query.filter_by(id=proxy_id, status='active', type='SOCKS5').first()
+    return Proxies.query.filter_by(id=proxy_id, status='ACTIVE', type='SOCKS5').first()
 
 # Context manager to use a SOCKS5 proxy
 @contextmanager
@@ -163,7 +163,7 @@ def run_scan_view():
             return f"An error occurred: {str(e)}"
 
     hosts = Host.query.all()
-    proxies = Proxies.query.filter_by(status='active', type='SOCKS5').all()
+    proxies = Proxies.query.filter_by(status='ACTIVE', type='SOCKS5').all()  # Changed 'active' to 'ACTIVE'
     return render_template('scans.html', hosts=hosts, proxies=proxies)
 
 # New route for reports page (this was missing)
@@ -185,7 +185,7 @@ def run_scan():
     if scan_all:
         logger.info("[BULK SCAN] Starting scan of all hosts using all proxies.")
         hosts = Host.query.with_entities(Host.ip_address).distinct().all()
-        proxies = Proxies.query.filter_by(status='active', type='SOCKS5').all()
+        proxies = Proxies.query.filter_by(status='ACTIVE', type='SOCKS5').all()  # Changed 'active' to 'ACTIVE'
 
         if not hosts or not proxies:
             flash("Missing hosts or proxies!", "danger")
