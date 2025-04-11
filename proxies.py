@@ -157,6 +157,15 @@ def delete_dead_proxies():
     connection = get_db_connection()
     try:
         with connection.cursor() as cursor:
+            # Debugging: Check if any scans are still referencing inactive proxies
+            cursor.execute("""
+                SELECT * FROM scan 
+                WHERE proxy_id IN (SELECT id FROM proxies WHERE status = %s)
+            """, ('inactive',))
+            rows = cursor.fetchall()
+            if rows:
+                print(f"Found references in scan table: {rows}")
+            
             # Update the scan table to set proxy_id to NULL where the proxy is dead
             cursor.execute("""
                 UPDATE scan 
@@ -182,5 +191,6 @@ def delete_dead_proxies():
         connection.close()
     
     return redirect(url_for('proxies.proxies'))
+
 
 
