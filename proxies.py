@@ -156,23 +156,31 @@ def delete_dead_proxies():
     connection = get_db_connection()
     try:
         with connection.cursor() as cursor:
-            # Set proxy_id to NULL for all scan records referencing inactive proxies
+            # Step 1: Set proxy_id to NULL for all scan records referencing inactive proxies
             cursor.execute("""
                 UPDATE scan 
                 SET proxy_id = NULL 
                 WHERE proxy_id IN (SELECT id FROM proxies WHERE status = %s)
             """, ('inactive',))
 
-            # Now, delete the proxies that are inactive
+            # Step 2: Delete the proxies that are inactive
             cursor.execute("DELETE FROM proxies WHERE status = %s", ('inactive',))
             
-            # Commit changes to the database
+            # Step 3: Commit changes to the database
             connection.commit()
 
-            # Reindex the proxies table by resetting AUTO_INCREMENT value
-            cursor.execute("ALTER TABLE proxies AUTO_INCREMENT = 1;")
-        
-        print("Dead proxies deleted and IDs reindexed successfully.")
+            # Step 4: Reset AUTO_INCREMENT to the highest ID value in the table
+            cursor.execute("""
+                SELECT MAX(id) FROM proxies;
+            """)
+            max_id = cursor.fetchone()[0]
+            
+            # If the table is empty, reset to 1, otherwise set to the next available ID
+            new_auto_increment = max_id + 1 if max_id is not None else 1
+
+            cursor.execute(f"ALTER TABLE proxies AUTO_INCREMENT = {new_auto_increment};")
+
+        print(f"Dead proxies deleted and AUTO_INCREMENT reset successfully.")
     
     except Exception as e:
         print(f"Error occurred while deleting dead proxies: {e}")
@@ -181,3 +189,4 @@ def delete_dead_proxies():
         connection.close()
     
     return redirect(url_for('proxies.proxies'))
+
