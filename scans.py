@@ -109,12 +109,18 @@ def perform_scan(scan_id, ip_address, proxy_id, scan_type):
 
             # Example: Collect scan results and process them
             scan_results = nm[ip_address]  # Results for the scanned IP
-            print(f"Scan results for {ip_address}: {scan_results}")
+            open_ports = scan_results.get('tcp', {}).keys()  # Get all open TCP ports
+
+            # Convert open ports to a string
+            results_str = ', '.join(str(port) for port in open_ports)
+
+            print(f"Scan results for {ip_address}: {results_str}")
 
         # After completing the scan, update the status in the database
         with db.session.begin():
             scan = Scan.query.get(scan_id)
             scan.status = 'Completed'  # Mark the scan as completed
+            scan.results = results_str  # Store the scan results
             db.session.commit()
 
         print(f"Scan {scan_id} completed successfully.")
