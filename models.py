@@ -6,13 +6,14 @@ db = SQLAlchemy()
 
 class Host(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    ip_address = db.Column(db.String(100), nullable=False, unique=True)  # Use IP address as the main unique identifier
-    resolved_hostname = db.Column(db.String(100), nullable=True)  # Optional resolved hostname (e.g., from DNS)
-    open_ports = db.Column(db.String(100), nullable=True)  # Store open ports (e.g., '80,443')
-    location = db.Column(db.String(100), nullable=True)  # Store location (e.g., 'New York, USA')
+    ip_address = db.Column(db.String(100), nullable=False, unique=True)  # Unique IP address
+    resolved_hostname = db.Column(db.String(100), nullable=True)  # Store resolved hostname (DNS)
+    open_ports = db.Column(db.String(100), nullable=True)
+    location = db.Column(db.String(100), nullable=True)
 
     def __repr__(self):
         return f'<Host {self.ip_address}>'
+
 
 class Proxies(db.Model):
     id = db.Column(db.Integer, primary_key=True)
