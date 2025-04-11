@@ -6,9 +6,14 @@ from enum import Enum
 db = SQLAlchemy()
 
 class StatusEnum(Enum):
-    ACTIVE = "Active"
-    INACTIVE = "Inactive"
-    PENDING = "Pending"
+    ACTIVE = "ACTIVE"
+    INACTIVE = "INACTIVE"
+    PENDING = "PENDING"
+
+    # Optionally, you can add a method to get the readable string
+    @classmethod
+    def get_display_name(cls, value):
+        return value.name.capitalize()
 
 class Host(db.Model):
     __tablename__ = 'hosts'
@@ -28,7 +33,7 @@ class Host(db.Model):
         return f'<Host {self.ip_address}>'
 
     def __str__(self):
-        return f"IP: {self.ip_address}, Status: {self.status.name}"
+        return f"IP: {self.ip_address}, Status: {StatusEnum.get_display_name(self.status)}"
 
     def __init__(self, ip_address, hostname=None, os=None, status=StatusEnum.ACTIVE, 
                  ports=None, last_scanned=None, open_ports=None, resolved_hostname=None, location=None):
@@ -55,7 +60,7 @@ class Proxies(db.Model):
         return f'<Proxy {self.ip_address}:{self.port}>'
 
     def __str__(self):
-        return f"{self.ip_address}:{self.port} ({self.status.name})"  # Updated to use StatusEnum
+        return f"{self.ip_address}:{self.port} ({StatusEnum.get_display_name(self.status)})"  # Updated to use StatusEnum
 
 class Scan(db.Model):
     __tablename__ = 'scan'
