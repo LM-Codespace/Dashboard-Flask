@@ -4,8 +4,6 @@ from datetime import datetime
 import socket
 import socks
 import threading
-import random
-import struct
 import logging
 from contextlib import contextmanager
 
@@ -33,6 +31,7 @@ def perform_port_scan(ip_address, proxy_id):
 # Function to perform hostname scan
 def perform_hostname_scan(ip_address, proxy_id):
     """Perform a hostname resolution scan on a given IP address"""
+    proxy = get_proxy_by_id(proxy_id)  # Ensure proxy is fetched by ID
     try:
         socks.set_default_proxy(socks.SOCKS5, proxy.ip_address, proxy.port, rdns=True)
         socket.socket = socks.socksocket
