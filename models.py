@@ -1,9 +1,7 @@
-from app import create_app
 from flask_sqlalchemy import SQLAlchemy
 
-# Initialize db here, but not directly in the top level
-app = create_app()
-db = SQLAlchemy(app)
+# Define db here, it will be initialized after app creation
+db = SQLAlchemy()
 
 class Host(db.Model):
     id = db.Column(db.Integer, primary_key=True)
