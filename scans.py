@@ -1,3 +1,5 @@
+from flask import Blueprint, render_template
+
 scans_bp = Blueprint('scans', __name__, url_prefix='/scans')
 
 @scans_bp.route('/')
