@@ -4,10 +4,12 @@ import random
 import socket
 import requests
 import geocoder
-from db import db  # Import db here
 
-# Import models, assuming they are defined elsewhere
-from models import Proxies, Host  # Ensure you have these models defined in models.py
+# Import db here to avoid circular import
+from app import db
+
+# Import models (ensure they are defined in models.py)
+from models import Proxies, Host
 
 scans_bp = Blueprint('scans', __name__)
 
