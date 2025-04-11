@@ -62,13 +62,12 @@ def hosts():
         connection = get_db_connection()
         try:
             with connection.cursor() as cursor:
-                cursor.execute('SELECT id, hostname, ip_address, os FROM hosts')  # Specify columns explicitly
+                cursor.execute('SELECT id, hostname, ip_address, os, status, ports, last_scanned, open_ports, resolved_hostname, location FROM hosts')  # Fetch all relevant columns
                 hosts = cursor.fetchall()
                 return render_template('hosts.html', hosts=hosts)
         finally:
             connection.close()
     return redirect(url_for('auth.login'))
-
 
 @hosts_bp.route('/add', methods=['POST'])
 def add_host():
@@ -76,10 +75,19 @@ def add_host():
         hostname = request.form['hostname']
         ip_address = request.form['ip_address']
         os = request.form['os']
+        status = request.form.get('status', 'Active')  # Default to 'Active'
+        ports = request.form.get('ports', '')  # Empty string if no ports provided
+        resolved_hostname = request.form.get('resolved_hostname', '')
+        location = request.form.get('location', '')
+        
         connection = get_db_connection()
         with connection.cursor() as cursor:
-            cursor.execute('INSERT INTO hosts (hostname, ip_address, os) VALUES (%s, %s, %s)', (hostname, ip_address, os))
+            cursor.execute(
+                'INSERT INTO hosts (hostname, ip_address, os, status, ports, resolved_hostname, location) VALUES (%s, %s, %s, %s, %s, %s, %s)',
+                (hostname, ip_address, os, status, ports, resolved_hostname, location)
+            )
             connection.commit()
+        
         flash('Host added successfully!')
         return redirect(url_for('hosts.hosts'))
     return redirect(url_for('auth.login'))
@@ -138,9 +146,18 @@ def edit_host(id):
             hostname = request.form['hostname']
             ip_address = request.form['ip_address']
             os = request.form['os']
+            status = request.form.get('status', 'Active')
+            ports = request.form.get('ports', '')
+            resolved_hostname = request.form.get('resolved_hostname', '')
+            location = request.form.get('location', '')
+            
             with connection.cursor() as cursor:
-                cursor.execute('UPDATE hosts SET hostname=%s, ip_address=%s, os=%s WHERE id=%s', (hostname, ip_address, os, id))
+                cursor.execute(
+                    'UPDATE hosts SET hostname=%s, ip_address=%s, os=%s, status=%s, ports=%s, resolved_hostname=%s, location=%s WHERE id=%s',
+                    (hostname, ip_address, os, status, ports, resolved_hostname, location, id)
+                )
                 connection.commit()
+            flash('Host updated successfully!')
             return redirect(url_for('hosts.hosts'))
 
         with connection.cursor() as cursor:
