@@ -24,3 +24,14 @@ class Scan(db.Model):
 
     def __repr__(self):
         return f'<Scan {self.id}>'
+
+class Proxies(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    ip = db.Column(db.String(100), nullable=False)
+    port = db.Column(db.Integer, nullable=False)
+    status = db.Column(db.String(50), nullable=False)  # 'active' or 'inactive'
+    type = db.Column(db.String(50), nullable=False)  # 'SOCKS5', 'HTTP', etc.
+
+    def __repr__(self):
+        return f'<Proxy {self.ip}:{self.port}>'
+
