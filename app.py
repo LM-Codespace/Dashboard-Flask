@@ -9,7 +9,7 @@ from flask_sqlalchemy import SQLAlchemy
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Initialize db (but don't import it yet)
+# Initialize db here (but do not import models yet)
 db = SQLAlchemy()
 
 # Create app factory function
@@ -23,6 +23,9 @@ def create_app():
 
     # Initialize db here
     db.init_app(app)
+
+    # Import models after creating the app
+    from models import Host, Proxies, Scan  # Import models here
 
     # Register blueprints
     from scans import scans_bp  # Import scans after creating the app
