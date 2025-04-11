@@ -1,68 +1,70 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h1>Run Scan</h1>
-    <p>Choose the type of scan, select an IP address, and optionally choose a proxy for the scan.</p>
+    <div class="scan-container">
+        <h1>Run Scan</h1>
+        <p>Choose the type of scan, select an IP address, and optionally choose a proxy for the scan.</p>
 
-    <!-- Debug Info (can remove after testing) -->
-    <div class="alert alert-info">
-        <strong>Debug Info:</strong>
-        <p>Hosts available: {{ hosts|length }}</p>
-        {% if hosts %}
-            <p>Sample IP: {{ hosts[0].ip_address }}</p>
+        <!-- Debug Info (can remove after testing) -->
+        <div class="alert alert-info">
+            <strong>Debug Info:</strong>
+            <p>Hosts available: {{ hosts|length }}</p>
+            {% if hosts %}
+                <p>Sample IP: {{ hosts[0].ip_address }}</p>
+            {% endif %}
+        </div>
+
+        <form method="POST">
+            <div class="form-group">
+                <label for="ip_address">IP Address:</label>
+                <select id="ip_address" name="ip_address" class="form-control" required>
+                    <option value="">Select IP Address</option>
+                    {% for host in hosts %}
+                        <option value="{{ host.ip_address }}">{{ host.ip_address }}</option>
+                    {% else %}
+                        <option value="" disabled>No IP addresses found in database</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="proxy_id">Proxy:</label>
+                <select id="proxy_id" name="proxy_id" class="form-control">
+                    <option value="">No Proxy (Direct Connection)</option>
+                    {% for proxy in proxies %}
+                        <option value="{{ proxy.id }}">
+                            {{ proxy.ip_address }}:{{ proxy.port }} ({{ proxy.type }})
+                        </option>
+                    {% else %}
+                        <option value="" disabled>No proxies available</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="scan_type">Scan Type:</label>
+                <select id="scan_type" name="scan_type" class="form-control" required>
+                    <option value="port_scan">Port Scan</option>
+                    <option value="hostname_scan">Hostname Scan</option>
+                    <option value="os_detection">OS Detection</option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Start Scan</button>
+        </form>
+
+        {% if not hosts %}
+            <div class="alert alert-warning mt-3">
+                <strong>Warning:</strong> No IP addresses found in the database.
+                <a href="{{ url_for('some_route_to_add_hosts') }}" class="alert-link">
+                    Add some hosts
+                </a>
+            </div>
         {% endif %}
-    </div>
 
-    <form method="POST">
-        <div class="form-group">
-            <label for="ip_address">IP Address:</label>
-            <select id="ip_address" name="ip_address" class="form-control" required>
-                <option value="">Select IP Address</option>
-                {% for host in hosts %}
-                    <option value="{{ host.ip_address }}">{{ host.ip_address }}</option>
-                {% else %}
-                    <option value="" disabled>No IP addresses found in database</option>
-                {% endfor %}
-            </select>
+        <!-- Link to view reports -->
+        <div class="mt-4">
+            <a href="{{ url_for('scans.reports') }}" class="btn btn-secondary">View Scan Reports</a>
         </div>
-
-        <div class="form-group">
-            <label for="proxy_id">Proxy:</label>
-            <select id="proxy_id" name="proxy_id" class="form-control">
-                <option value="">No Proxy (Direct Connection)</option>
-                {% for proxy in proxies %}
-                    <option value="{{ proxy.id }}">
-                        {{ proxy.ip_address }}:{{ proxy.port }} ({{ proxy.type }})
-                    </option>
-                {% else %}
-                    <option value="" disabled>No proxies available</option>
-                {% endfor %}
-            </select>
-        </div>
-
-        <div class="form-group">
-            <label for="scan_type">Scan Type:</label>
-            <select id="scan_type" name="scan_type" class="form-control" required>
-                <option value="port_scan">Port Scan</option>
-                <option value="hostname_scan">Hostname Scan</option>
-                <option value="os_detection">OS Detection</option>
-            </select>
-        </div>
-
-        <button type="submit" class="btn btn-primary">Start Scan</button>
-    </form>
-
-    {% if not hosts %}
-        <div class="alert alert-warning mt-3">
-            <strong>Warning:</strong> No IP addresses found in the database.
-            <a href="{{ url_for('some_route_to_add_hosts') }}" class="alert-link">
-                Add some hosts
-            </a>
-        </div>
-    {% endif %}
-
-    <!-- Link to view reports -->
-    <div class="mt-4">
-        <a href="{{ url_for('scans.reports') }}" class="btn btn-secondary">View Scan Reports</a>
     </div>
 {% endblock %}
