@@ -715,3 +715,17 @@ select.form-control {
     color: red;
     font-weight: bold;
 }
+.status-in-progress {
+    color: orange;
+    font-weight: bold;
+}
+
+.status-completed {
+    color: green;
+    font-weight: bold;
+}
+
+.status-failed {
+    color: red;
+    font-weight: bold;
+}
