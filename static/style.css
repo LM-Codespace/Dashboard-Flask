@@ -138,3 +138,29 @@ input[type="submit"]:hover {
 .btn-check:hover {
     text-decoration: underline;
 }
+
+.subnav {
+    margin-bottom: 20px;
+}
+.subnav-link {
+    margin-right: 10px;
+    padding: 8px 16px;
+    background: #f0f0f0;
+    border-radius: 6px;
+    text-decoration: none;
+}
+.subnav-link:hover {
+    background: #ddd;
+}
+
+.styled-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.styled-table th, .styled-table td {
+    border: 1px solid #ccc;
+    padding: 8px;
+}
+.styled-table th {
+    background-color: #f5f5f5;
+}
