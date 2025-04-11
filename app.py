@@ -1,11 +1,12 @@
-import logging
 from flask import Flask, session, redirect, url_for, render_template
 import pymysql
 from auth import auth_bp
 from hosts import hosts_bp
 from proxies import proxies_bp
+from db import db  # Import db from the new db.py
 
 # Configure logging
+import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -26,10 +27,9 @@ def create_app():
     }
 
     # Add the database initialization inside the app factory function
-    from flask_sqlalchemy import SQLAlchemy
     app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://flaskuser:flaskpassword@localhost/flask_dashboard'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-    db = SQLAlchemy(app)
+    db.init_app(app)  # Initialize db here
 
     # Register blueprints
     from scans import scans_bp  # Import here after creating app
