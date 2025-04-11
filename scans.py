@@ -49,6 +49,39 @@ def run_scan():
         return redirect(url_for('auth.login'))
 
     scan_type = request.form['scan_type']
+    scan_all = request.form.get('scan_all') == 'true'
+
+    if scan_all:
+        print("[BULK SCAN] Starting scan of all hosts using all proxies.")
+        hosts = Host.query.with_entities(Host.ip_address).distinct().all()
+        proxies = Proxies.query.filter_by(status='active', type='SOCKS5').all()
+
+        if not hosts or not proxies:
+            flash("Missing hosts or proxies!", "danger")
+            return redirect(url_for('scans.run_scan_view'))
+
+        # Round-robin assign proxies to hosts
+        for idx, host in enumerate(hosts):
+            proxy = proxies[idx % len(proxies)]
+            new_scan = Scan(
+                ip_address=host.ip_address,
+                proxy_id=proxy.id,
+                scan_type=scan_type,
+                status='In Progress',
+                date=datetime.utcnow()
+            )
+            db.session.add(new_scan)
+            db.session.commit()
+
+            print(f"[Bulk Scan] Created scan {new_scan.id} for IP {host.ip_address} using Proxy ID {proxy.id}")
+            t = threading.Thread(target=perform_scan, args=(new_scan.id, host.ip_address, proxy.id, scan_type))
+            t.daemon = True
+            t.start()
+
+        flash(f'Bulk scan initiated for {len(hosts)} hosts!', 'info')
+        return redirect(url_for('scans.view_scans'))
+
+    # Normal single scan
     ip_address = request.form['ip_address']
     proxy_id = request.form.get('proxy_id')
 
@@ -61,10 +94,9 @@ def run_scan():
     )
     db.session.add(new_scan)
     db.session.commit()
-
     scan_id = new_scan.id
-    print(f"[Threading] Starting thread for Scan ID: {scan_id} | IP: {ip_address} | Type: {scan_type}")
 
+    print(f"[Single Scan] Starting scan {scan_id} for IP: {ip_address}")
     t = threading.Thread(target=perform_scan, args=(scan_id, ip_address, proxy_id, scan_type))
     t.daemon = True
     t.start()
