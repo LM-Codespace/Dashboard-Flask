@@ -1,38 +1,70 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h2>Proxies</h2>
+<div class="container">
+    <h2>Proxies Management</h2>
 
-<form method="POST" action="{{ url_for('proxies.scan_proxies') }}">
-    <input type="text" name="proxy_url" placeholder="Enter Proxy URL" required>
-    <button type="submit">Scrape Proxies</button>
-</form>
+    <!-- Proxy URL Scraping Form -->
+    <div class="form-section">
+        <h3>Scrape Proxies</h3>
+        <form method="POST" action="{{ url_for('proxies.scan_proxies') }}">
+            <div class="form-group">
+                <input type="text" name="proxy_url" placeholder="Enter Proxy URL" required>
+                <button type="submit" class="btn">Scrape Proxies</button>
+            </div>
+        </form>
+    </div>
 
+    <!-- Actions -->
+    <div class="form-section">
+        <h3>Actions</h3>
+        <form action="{{ url_for('proxies.check_proxies') }}" method="POST">
+            <button type="submit" class="btn action-btn">Check All Proxies</button>
+        </form>
+        <br><br>
+        <form action="{{ url_for('proxies.delete_dead_proxies') }}" method="POST">
+            <button type="submit" class="btn action-btn">Delete Dead Proxies</button>
+        </form>
+    </div>
 
-<h3>Actions:</h3>
-<form action="{{ url_for('proxies.check_proxies') }}" method="POST">
-    <button type="submit">Check All Proxies</button>
-</form>
+    <!-- Existing Proxies Table -->
+    <div class="table-section">
+        <h3>Existing Proxies</h3>
+        <table class="proxy-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>IP</th>
+                    <th>Port</th>
+                    <th>Status</th>
+                    <th>Type</th>
+                    <th>Last Scanned</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for proxy in proxies %}
+                    <tr class="{{ 'active' if proxy[3] == 'active' else 'inactive' }}">
+                        <td>{{ proxy[0] }}</td>
+                        <td>{{ proxy[1] }}</td>
+                        <td>{{ proxy[2] }}</td>
+                        <td>{{ proxy[3] }}</td>
+                        <td>{{ proxy[4] }}</td>
+                        <td>{{ proxy[5] }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 
-<form action="{{ url_for('proxies.delete_dead_proxies') }}" method="POST">
-    <button type="submit">Delete Dead Proxies</button>
-</form>
-
-<h3>Existing Proxies:</h3>
-<table>
-    <tr>
-        <th>ID</th>
-        <th>IP</th>
-        <th>Port</th>
-        <th>Status</th>
-    </tr>
-    {% for proxy in proxies %}
-    <tr>
-        <td>{{ proxy.id }}</td>
-        <td>{{ proxy.ip_address }}</td>
-        <td>{{ proxy.port }}</td>
-        <td>{{ proxy.status }}</td>
-    </tr>
-    {% endfor %}
-</table>
+    <!-- Pagination Controls -->
+    <div class="pagination">
+        {% if page > 1 %}
+            <a href="{{ url_for('proxies.proxies', page=page-1) }}" class="pagination-link">Previous</a>
+        {% endif %}
+        <span>Page {{ page }} of {{ total_pages }}</span>
+        {% if page < total_pages %}
+            <a href="{{ url_for('proxies.proxies', page=page+1) }}" class="pagination-link">Next</a>
+        {% endif %}
+    </div>
+</div>
 {% endblock %}
