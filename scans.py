@@ -10,7 +10,7 @@ import nmap
 scans_bp = Blueprint('scans', __name__)
 
 def get_db_connection():
-    # Implement your database connection logic here
+    # Implement your database connection logic here if needed
     pass
 
 def get_valid_proxies():
@@ -58,24 +58,20 @@ def run_scan():
         ip_address = request.form['ip_address']
         proxy_id = request.form.get('proxy_id')
 
-        # Get the proxy details
-        connection = get_db_connection()
-        try:
-            with connection.cursor() as cursor:
-                if proxy_id:
-                    cursor.execute('SELECT * FROM proxies WHERE id=%s', (proxy_id,))
-                    proxy = cursor.fetchone()
-                else:
-                    proxy = None
-                
-                cursor.execute('INSERT INTO scan (ip_address, scan_type, status) VALUES (%s, %s, %s)', 
-                             (ip_address, scan_type, 'In Progress'))
-                connection.commit()
-                scan_id = cursor.lastrowid
-        finally:
-            connection.close()
+        # Create a new scan entry in the database
+        new_scan = Scan(
+            ip_address=ip_address,
+            proxy_id=proxy_id,
+            scan_type=scan_type,
+            status='In Progress',
+            date=datetime.utcnow()
+        )
+        db.session.add(new_scan)
+        db.session.commit()
+        scan_id = new_scan.id  # Get the newly created scan's ID
 
-        t = threading.Thread(target=perform_scan, args=(scan_id, ip_address, proxy, scan_type))
+        # Start the scan in a separate thread to avoid blocking
+        t = threading.Thread(target=perform_scan, args=(scan_id, ip_address, proxy_id, scan_type))
         t.start()
 
         flash('Scan started successfully!', 'success')
@@ -91,23 +87,38 @@ def scan_history():
 def reports():
     return render_template('reports.html')
 
-def perform_scan(scan_id, ip_address, proxy, scan_type):
+def perform_scan(scan_id, ip_address, proxy_id, scan_type):
+    # Perform the scanning logic based on scan type
     nm = nmap.PortScanner()
-    if scan_type == 'port_scan':
-        try:
-            if proxy:
-                # Implement proxy handling here
-                pass
-                
-            nm.scan(ip_address, '1-65535')
-            
-            connection = get_db_connection()
-            try:
-                with connection.cursor() as cursor:
-                    cursor.execute('UPDATE scan SET status=%s WHERE id=%s', ('Completed', scan_id))
-                    connection.commit()
-            finally:
-                connection.close()
 
-        except Exception as e:
-            print(f"Scan failed: {e}")
+    try:
+        # Start scanning based on the scan type
+        if scan_type == 'port_scan':
+            if proxy_id:
+                # Implement proxy handling here (e.g., using the proxy for requests)
+                pass
+            
+            # Run the Nmap scan
+            nm.scan(ip_address, '1-65535')
+
+            # Example: Collect scan results and process them
+            scan_results = nm[ip_address]  # Results for the scanned IP
+
+            # You can add further processing of the scan results if needed
+
+        # After completing the scan, update the status in the database
+        with db.session.begin():
+            scan = Scan.query.get(scan_id)
+            scan.status = 'Completed'  # Mark the scan as completed
+            db.session.commit()
+
+        print(f"Scan {scan_id} completed successfully.")
+
+    except Exception as e:
+        print(f"Scan failed: {e}")
+        # If the scan fails, mark it as failed in the database
+        with db.session.begin():
+            scan = Scan.query.get(scan_id)
+            scan.status = 'Failed'
+            db.session.commit()
+
