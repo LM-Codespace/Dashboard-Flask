@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 pymysql.install_as_MySQLdb()
 
-# Move the app initialization to a function
+# Create app factory function
 def create_app():
     app = Flask(__name__)
     app.secret_key = 'your_secret_key'
@@ -26,8 +26,11 @@ def create_app():
         'autocommit': True
     }
 
-    def get_db_connection():
-        return pymysql.connect(**DB_CONFIG)
+    # Add the database initialization inside the app factory function
+    from flask_sqlalchemy import SQLAlchemy
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://flaskuser:flaskpassword@localhost/flask_dashboard'
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    db = SQLAlchemy(app)
 
     # Register blueprints
     app.register_blueprint(auth_bp, url_prefix='/auth')
@@ -35,6 +38,7 @@ def create_app():
     app.register_blueprint(proxies_bp, url_prefix='/proxies')
     app.register_blueprint(scans_bp, url_prefix='/scans')
 
+    # Add the necessary routes
     @app.route('/')
     def home():
         if 'loggedin' in session:
