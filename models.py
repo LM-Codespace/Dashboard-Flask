@@ -38,17 +38,15 @@ class Scan(db.Model):
     status = db.Column(db.String(50))
     scan_type = db.Column(db.String(50))
     
-    # Either add this column to your database or remove it from the model
-    # Option 1: Add column to database (recommended)
-    # Run: ALTER TABLE scan ADD COLUMN ip_address VARCHAR(50);
-    ip_address = db.Column(db.String(50))
+    # Column for storing the target IP address for the scan
+    ip_address = db.Column(db.String(50), nullable=False)
     
-    # Option 2: If you can't modify database, remove the ip_address field above
-    # and use target_ip if that's what your database has:
-    # target_ip = db.Column('target_ip', db.String(50))  # Use actual column name
-    
+    # Proxy reference to associate a proxy with this scan
     proxy_id = db.Column(db.Integer, db.ForeignKey('proxies.id'), nullable=True)
     proxy = db.relationship('Proxies', backref=db.backref('scans', lazy=True))
 
+    # Add this column to store the results of the scan (e.g., open ports, hostnames, etc.)
+    results = db.Column(db.Text, nullable=True)  # Store scan results (e.g., open ports, hostnames, etc.)
+    
     def __repr__(self):
         return f'<Scan {self.id} - {self.scan_type}>'
