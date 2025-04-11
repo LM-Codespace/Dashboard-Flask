@@ -96,53 +96,69 @@ def reports():
     return render_template('reports.html', scans=scans)
 
 
+import socks
+import socket
+import random
+from models import db, Scan, Proxies
+
 def perform_scan(scan_id, ip_address, proxy_id, scan_type):
-    print(f"Starting scan for Scan ID {scan_id}, IP Address {ip_address}, Proxy ID {proxy_id}, Scan Type {scan_type}.")
-    nm = nmap.PortScanner()
+    print(f"Starting scan ID {scan_id} | Type: {scan_type} | IP: {ip_address}")
 
     try:
-        # Log starting the scan
-        print(f"Initiating {scan_type} for {ip_address}.")
-        
-        # Start scanning based on the scan type
+        # Get all active proxies
+        proxies = Proxies.query.filter_by(status='active', type='SOCKS5').all()
+        if not proxies:
+            raise Exception("No active SOCKS5 proxies available")
+
+        # Choose a proxy (randomly for this scan session)
+        proxy = random.choice(proxies)
+        print(f"Using proxy: {proxy.ip_address}:{proxy.port}")
+
+        # Set global proxy for sockets
+        socks.set_default_proxy(socks.SOCKS5, proxy.ip_address, proxy.port)
+        socket.socket = socks.socksocket  # Patch socket
+
+        results_str = ""
+
         if scan_type == 'port_scan':
-            print(f"Running port scan for {ip_address}.")
-            nm.scan(ip_address, '1-65535')  # Scan all ports 1-65535
-            print(f"Scan results for {ip_address}: {nm[ip_address]}")
-
-            # Example: Collect scan results and process them
-            scan_results = nm[ip_address]
-            open_ports = scan_results.get('tcp', {}).keys()  # Get all open TCP ports
-
-            # Convert open ports to a string
-            results_str = ', '.join(str(port) for port in open_ports)
-
-            print(f"Scan results for {ip_address}: {results_str}")
+            print("Performing SOCKS5 port scan manually...")
+            open_ports = []
+            for port in range(1, 1025):  # You can increase the range if needed
+                try:
+                    s = socket.socket()
+                    s.settimeout(2)
+                    s.connect((ip_address, port))
+                    open_ports.append(str(port))
+                    s.close()
+                except Exception:
+                    continue
+            results_str = "Open Ports: " + ", ".join(open_ports) if open_ports else "No open ports found"
 
         elif scan_type == 'hostname_scan':
-            print(f"Running hostname scan for {ip_address}.")
-            # Implement hostname resolution logic (e.g., using socket.gethostbyaddr)
+            print("Performing hostname resolution over proxy...")
             try:
                 resolved_hostname = socket.gethostbyaddr(ip_address)
-                results_str = resolved_hostname[0]  # Get the primary hostname
-                print(f"Resolved hostname for {ip_address}: {results_str}")
+                results_str = f"Resolved Hostname: {resolved_hostname[0]}"
             except socket.herror as e:
-                print(f"Hostname resolution failed for {ip_address}: {e}")
-                results_str = "Failed to resolve hostname"
+                results_str = "Hostname resolution failed"
 
-        # After completing the scan, update the status in the database
+        elif scan_type == 'os_detection':
+            results_str = "OS detection is not supported over SOCKS5 proxies via nmap."
+
+        # Update DB with results
         with db.session.begin():
             scan = Scan.query.get(scan_id)
-            scan.status = 'Completed'  # Mark the scan as completed
-            scan.results = results_str  # Store the scan results
+            scan.status = 'Completed'
+            scan.results = results_str
             db.session.commit()
 
-        print(f"Scan {scan_id} completed successfully.")
+        print(f"Scan {scan_id} completed: {results_str}")
 
     except Exception as e:
-        print(f"Scan failed for {ip_address}: {e}")
-        # If the scan fails, mark it as failed in the database
+        print(f"Scan {scan_id} failed: {e}")
         with db.session.begin():
             scan = Scan.query.get(scan_id)
             scan.status = 'Failed'
+            scan.results = f"Scan failed: {str(e)}"
             db.session.commit()
+
