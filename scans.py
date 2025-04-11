@@ -22,3 +22,8 @@ def scan_history():
 def view_report(scan_id):
     # show scan report
     ...
+
+@scans_bp.route('/reports')
+def reports():
+    return render_template('reports.html')
+
