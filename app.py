@@ -1,10 +1,12 @@
+# app.py
 from flask import Flask, session, redirect, url_for, render_template
 import pymysql
 import logging
-from scans import scans_bp
 from auth import auth_bp
 from hosts import hosts_bp
 from proxies import proxies_bp
+from scans import scans_bp  # Import scans blueprint after app initialization
+
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -26,13 +28,11 @@ DB_CONFIG = {
 def get_db_connection():
     return pymysql.connect(**DB_CONFIG)
 
-# Import blueprints
-
-
 # Register blueprints
 app.register_blueprint(auth_bp, url_prefix='/auth')
 app.register_blueprint(hosts_bp, url_prefix='/hosts')
 app.register_blueprint(proxies_bp, url_prefix='/proxies')
+app.register_blueprint(scans_bp, url_prefix='/scans')  # Register scans blueprint here
 
 @app.route('/')
 def home():
@@ -43,12 +43,10 @@ def home():
 @app.route('/dashboard')
 def dashboard():
     return render_template('dashboard.html')
+
 @app.route('/scans')
 def scans():
     return render_template('scans.html')
-
-
-app.register_blueprint(scans_bp)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
