@@ -1,0 +1,20 @@
+<table>
+    <thead>
+        <tr>
+            <th>Host</th>
+            <th>Resolved Hostname</th>
+            <th>Open Ports</th>
+            <th>Location</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for host in hosts %}
+            <tr>
+                <td>{{ host.name }}</td>
+                <td>{{ host.resolved_hostname }}</td>
+                <td>{{ host.open_ports }}</td>
+                <td>{{ host.location }}</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
