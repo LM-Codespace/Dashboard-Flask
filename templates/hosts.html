@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+
 {% block content %}
     <h1>Hosts</h1>
     <p>Manage known and unknown devices on your network.</p>
@@ -60,12 +61,13 @@
             <tbody>
                 {% for host in hosts %}
                     <tr>
-                        <td>{{ host[1] }}</td>
-                        <td>{{ host[2] }}</td>
-                        <td>{{ host[3] }}</td>
+                        <!-- Display resolved_hostname as Hostname, and ip_address as IP Address -->
+                        <td>{{ host.resolved_hostname or host.ip_address }}</td>
+                        <td>{{ host.ip_address }}</td>
+                        <td>{{ host.operating_system }}</td>
                         <td>
-                            <a href="/hosts/edit/{{ host[0] }}" class="btn btn-sm btn-warning">Edit</a>
-                            <a href="/hosts/delete/{{ host[0] }}" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?')">Delete</a>
+                            <a href="/hosts/edit/{{ host.id }}" class="btn btn-sm btn-warning">Edit</a>
+                            <a href="/hosts/delete/{{ host.id }}" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?')">Delete</a>
                         </td>
                     </tr>
                 {% endfor %}
