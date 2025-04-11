@@ -19,60 +19,38 @@ def run_scan_view():
 
 @scans_bp.route('/run', methods=['POST'])
 def run_scan():
-    selected_hosts = request.form.getlist('hosts')  # Get selected host IDs from the form
-    scan_type = request.form.get('scan_type')  # The type of scan selected (e.g., "hostname", "port_check")
+    if 'loggedin' in session:
+        # Get form data
+        scan_type = request.form['scan_type']
+        ip_address = request.form['ip_address']
+        proxy_id = request.form.get('proxy_id')  # Optional, in case you want to use proxies
 
-    # Get available SOCKS5 proxies
-    valid_proxies = get_valid_proxies()
+        # Get the proxy details
+        connection = get_db_connection()
+        try:
+            with connection.cursor() as cursor:
+                # If the proxy is selected, fetch the proxy details
+                if proxy_id:
+                    cursor.execute('SELECT * FROM proxies WHERE id=%s', (proxy_id,))
+                    proxy = cursor.fetchone()
+                else:
+                    proxy = None
+                
+                # Add a new scan entry in the DB with ip_address directly
+                cursor.execute('INSERT INTO scan (ip_address, scan_type, status) VALUES (%s, %s, %s)', 
+                               (ip_address, scan_type, 'In Progress'))
+                connection.commit()
+                scan_id = cursor.lastrowid
+        finally:
+            connection.close()
 
-    if not valid_proxies:
-        flash('No valid SOCKS5 proxies available!', 'error')
-        return redirect(url_for('scans.run_scan_view'))
+        # Perform the scan (could be a separate function or thread)
+        t = threading.Thread(target=perform_scan, args=(scan_id, ip_address, proxy, scan_type))
+        t.start()
 
-    # Loop over selected hosts
-    for host_id in selected_hosts:
-        host = Host.query.get(host_id)  # Get the host object from the database
-        if not host:
-            continue
-
-        # Create a Scan record to track this scan
-        new_scan = Scan(date=datetime.utcnow(), status='In Progress', type=scan_type, host=host)
-        db.session.add(new_scan)
-
-        # Perform the scan based on the scan type
-        if scan_type == 'hostname':
-            try:
-                resolved_ip = socket.gethostbyname(host.name)  # Resolve hostname to IP
-                host.resolved_hostname = resolved_ip
-            except socket.gaierror:
-                host.resolved_hostname = "Failed to resolve hostname"
-        
-        elif scan_type == 'port_check':
-            open_ports = []
-            for port in [80, 443]:  # Check common HTTP(S) ports
-                try:
-                    proxy = f"socks5://{valid_proxies[0].ip_address}:{valid_proxies[0].port}"
-                    response = requests.get(f"http://{host.ip}:{port}", proxies={"http": proxy, "https": proxy}, timeout=5)
-                    if response.status_code == 200:
-                        open_ports.append(port)
-                except requests.RequestException:
-                    continue
-
-            host.open_ports = str(open_ports)  # Store open ports as a string
-        
-        # Get the location of the host IP (using geocoder)
-        g = geocoder.ip(host.ip)
-        host.location = f"{g.city}, {g.country}"  # Format location as city, country
-
-        # Commit changes to the host
-        db.session.commit()
-
-        # Update scan status to 'Completed' after the scan is finished
-        new_scan.status = 'Completed'
-        db.session.commit()
-
-    flash('Scan completed and host data updated.', 'success')
-    return redirect(url_for('scans.run_scan_view'))
+        flash('Scan started successfully!', 'success')
+        return redirect(url_for('scans.view_scans'))
+    return redirect(url_for('auth.login'))
 
 # View history of scans
 @scans_bp.route('/history')
@@ -85,3 +63,36 @@ def scan_history():
 @scans_bp.route('/reports')
 def reports():
     return render_template('reports.html')
+
+import nmap  # For port scanning, or use other libraries depending on the scan type
+import time
+
+def perform_scan(scan_id, ip_address, proxy, scan_type):
+    # Example: Perform scan based on scan_type
+    # Here, we use nmap for port scanning. You can expand this function for other types of scans.
+    nm = nmap.PortScanner()
+
+    if scan_type == 'port_scan':
+        # Scan the host for open ports
+        try:
+            # Example using the nmap scanner
+            if proxy:
+                # Example: Use proxy if needed
+                pass  # Implement proxy handling here
+                
+            nm.scan(ip_address, '1-65535')  # Scan all ports
+            
+            # Store results in the scan table (after the scan is complete)
+            connection = get_db_connection()
+            try:
+                with connection.cursor() as cursor:
+                    cursor.execute('UPDATE scan SET status=%s WHERE id=%s', ('Completed', scan_id))
+                    connection.commit()
+            finally:
+                connection.close()
+
+            # Optionally, you can also store detailed scan results in a results table or log
+        except Exception as e:
+            print(f"Scan failed: {e}")
+            pass
+
