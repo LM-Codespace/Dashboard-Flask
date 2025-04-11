@@ -32,24 +32,19 @@ def login():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-        
         connection = get_db_connection()
         try:
             with connection.cursor() as cursor:
-                cursor.execute('SELECT * FROM users WHERE username=%s', (username,))
+                cursor.execute('SELECT * FROM users WHERE username=%s AND password=%s', (username, password))
                 account = cursor.fetchone()
-                
-                if account and check_password_hash(account[2], password):  # account[2] is the password column
+                if account:
                     session['loggedin'] = True
                     session['username'] = account[1]
-                    session.permanent = True  # Ensure session is permanent
-                    flash(f"Logged in as {session['username']}", 'success')  # Success message
                     return redirect(url_for('hosts.hosts'))  # Redirect to hosts page
                 else:
                     msg = 'Incorrect username/password!'
         finally:
             connection.close()
-
     return render_template('login.html', msg=msg)
 
 @auth_bp.route('/logout')
