@@ -1,29 +1,15 @@
-from flask_sqlalchemy import SQLAlchemy
-
-# Define db here, it will be initialized after app creation
-db = SQLAlchemy()
+from app import db  # Import db from app.py
 
 class Host(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
-    ip = db.Column(db.String(15), nullable=False)
-    resolved_hostname = db.Column(db.String(100))
-    open_ports = db.Column(db.String(100))
-    location = db.Column(db.String(100))
+    ip = db.Column(db.String(100), nullable=False)
+    resolved_hostname = db.Column(db.String(100), nullable=True)
+    open_ports = db.Column(db.String(100), nullable=True)
+    location = db.Column(db.String(100), nullable=True)
 
     def __repr__(self):
         return f'<Host {self.name}>'
-
-class Scan(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    type = db.Column(db.String(50))
-    status = db.Column(db.String(50))
-    date = db.Column(db.DateTime)
-    host_id = db.Column(db.Integer, db.ForeignKey('host.id'))
-    host = db.relationship('Host', backref=db.backref('scans', lazy=True))
-
-    def __repr__(self):
-        return f'<Scan {self.id}>'
 
 class Proxies(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -35,3 +21,13 @@ class Proxies(db.Model):
     def __repr__(self):
         return f'<Proxy {self.ip}:{self.port}>'
 
+class Scan(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    date = db.Column(db.DateTime, nullable=False)
+    status = db.Column(db.String(50), nullable=False)
+    type = db.Column(db.String(50), nullable=False)
+    host_id = db.Column(db.Integer, db.ForeignKey('host.id'), nullable=False)
+    host = db.relationship('Host', backref=db.backref('scans', lazy=True))
+
+    def __repr__(self):
+        return f'<Scan {self.id} for {self.host.name}>'
