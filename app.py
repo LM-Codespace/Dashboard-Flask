@@ -1,5 +1,5 @@
-from flask import Flask, session, redirect, url_for, render_template
 import logging
+from flask import Flask, session, redirect, url_for, render_template
 import pymysql
 from auth import auth_bp
 from hosts import hosts_bp
