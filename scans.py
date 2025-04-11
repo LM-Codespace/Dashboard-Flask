@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
-from models import Host, Proxy, Scan, db
+from models import Host, Proxies, Scan, db
 from datetime import datetime
 import socket
 import socks
