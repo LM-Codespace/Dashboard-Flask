@@ -701,3 +701,17 @@ select.form-control {
         padding: 10px 18px;
     }
 }
+.status-in-progress {
+    color: orange;
+    font-weight: bold;
+}
+
+.status-completed {
+    color: green;
+    font-weight: bold;
+}
+
+.status-failed {
+    color: red;
+    font-weight: bold;
+}
