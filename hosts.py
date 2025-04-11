@@ -62,12 +62,13 @@ def hosts():
         connection = get_db_connection()
         try:
             with connection.cursor() as cursor:
-                cursor.execute('SELECT * FROM hosts')
+                cursor.execute('SELECT id, hostname, ip_address, os FROM hosts')  # Specify columns explicitly
                 hosts = cursor.fetchall()
                 return render_template('hosts.html', hosts=hosts)
         finally:
             connection.close()
     return redirect(url_for('auth.login'))
+
 
 @hosts_bp.route('/add', methods=['POST'])
 def add_host():
