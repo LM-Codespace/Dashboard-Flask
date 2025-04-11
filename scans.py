@@ -4,9 +4,7 @@ import socket
 import requests
 import geocoder  # To get location info based on IP
 
-# Remove db import from top and import it inside the function
-# from app import db
-from models import Host, Scan  # Make sure you have a Scan model to track scan results
+from models import Host, Scan  # Import models from models.py after db is initialized
 
 # Fetch the valid SOCKS5 proxies from the database
 def get_valid_proxies():
@@ -24,7 +22,7 @@ def run_scan_view():
 @scans_bp.route('/run', methods=['POST'])
 def run_scan():
     # Import db here to avoid circular import
-    from app import db
+    from models import db  # Now we can import db from models
 
     selected_hosts = request.form.getlist('hosts')  # Get selected host IDs
     scan_type = request.form.get('scan_type')  # The type of scan selected (e.g., "hostname", "port_check")
