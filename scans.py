@@ -18,7 +18,7 @@ def run_scan_view():
         proxy_id = request.form.get('proxy_id')
         scan_type = request.form.get('scan_type')
 
-        # Perform the scan logic here, e.g., start nmap scan, etc.
+        # Example: Start the scan logic here, such as invoking a scan tool like nmap
         new_scan = Scan(
             ip_address=ip_address,
             proxy_id=proxy_id,
@@ -32,13 +32,12 @@ def run_scan_view():
         flash('Scan initiated successfully!', 'success')
         return redirect(url_for('scans.run_scan_view'))  # Redirect to scans page
 
-    # Fetch available IPs (from Host) and proxies (from Proxies)
-    hosts = Host.query.all()
-    proxies = Proxies.query.all()
+    # Fetch available IPs (from the hosts table) and proxies (from the proxies table)
+    hosts = Host.query.all()  # Query the hosts table
+    proxies = Proxies.query.all()  # Query the proxies table
 
-    # Pass the data to the template
+    # Pass the data to the template for rendering
     return render_template('scans.html', hosts=hosts, proxies=proxies)
-
 @scans_bp.route('/run', methods=['POST'])
 def run_scan():
     if 'loggedin' in session:
