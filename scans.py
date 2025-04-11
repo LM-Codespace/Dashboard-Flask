@@ -4,14 +4,16 @@ import socket
 import requests
 import geocoder  # To get location info based on IP
 
-# Assuming you're using an ORM like SQLAlchemy
-from app import db
+# Remove db import from top and import it inside the function
+# from app import db
 from models import Host, Scan  # Make sure you have a Scan model to track scan results
 
 # Fetch the valid SOCKS5 proxies from the database
 def get_valid_proxies():
     # Assuming proxies are stored in a table, fetch active SOCKS5 proxies
     return [p for p in Proxies.query.filter_by(status='active', type='SOCKS5')]
+
+scans_bp = Blueprint('scans', __name__)
 
 @scans_bp.route('/')
 def run_scan_view():
@@ -21,6 +23,9 @@ def run_scan_view():
 
 @scans_bp.route('/run', methods=['POST'])
 def run_scan():
+    # Import db here to avoid circular import
+    from app import db
+
     selected_hosts = request.form.getlist('hosts')  # Get selected host IDs
     scan_type = request.form.get('scan_type')  # The type of scan selected (e.g., "hostname", "port_check")
 
