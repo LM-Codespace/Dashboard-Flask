@@ -68,15 +68,15 @@
                 {% if hosts %}
                     {% for host in hosts %}
                         <tr>
-                            <td>{{ host.hostname }}</td>  <!-- hostname -->
-                            <td>{{ host.ip_address }}</td>  <!-- ip_address -->
-                            <td>{{ host.os }}</td>  <!-- os -->
-                            <td>{{ host.status }}</td>  <!-- status -->
-                            <td>{{ host.ports }}</td>  <!-- ports -->
-                            <td>{{ host.last_scanned.strftime('%Y-%m-%d %H:%M:%S') if host.last_scanned else 'N/A' }}</td>  <!-- last_scanned -->
-                            <td>{{ host.open_ports or 'N/A' }}</td>  <!-- open_ports -->
-                            <td>{{ host.resolved_hostname or 'N/A' }}</td>  <!-- resolved_hostname -->
-                            <td>{{ host.location or 'N/A' }}</td>  <!-- location -->
+                            <td>{{ host.hostname }}</td>
+                            <td>{{ host.ip_address }}</td>
+                            <td>{{ host.os }}</td>
+                            <td>{{ host.status }}</td>
+                            <td>{{ host.ports or 'N/A' }}</td>
+                            <td>{{ host.last_scanned.strftime('%Y-%m-%d %H:%M:%S') if host.last_scanned else 'N/A' }}</td>
+                            <td>{{ host.open_ports or 'N/A' }}</td>
+                            <td>{{ host.resolved_hostname or 'N/A' }}</td>
+                            <td>{{ host.location or 'N/A' }}</td>
                             <td>
                                 <a href="/hosts/edit/{{ host.id }}" class="btn btn-sm btn-warning">Edit</a>
                                 <a href="/hosts/delete/{{ host.id }}" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?')">Delete</a>
