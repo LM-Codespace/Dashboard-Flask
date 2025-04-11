@@ -10,7 +10,8 @@ scans_bp = Blueprint('scans', __name__)
 
 # Helper to fetch active SOCKS5 proxies
 def get_valid_proxies():
-    proxies = Proxy.query.filter_by(status='active', type='SOCKS5').all()
+    # Use the correct model name "Proxies" (plural)
+    proxies = Proxies.query.filter_by(status='active', type='SOCKS5').all()
     print(f"[Proxy Fetch] Retrieved {len(proxies)} active SOCKS5 proxies.")
     return proxies
 
@@ -45,7 +46,7 @@ def run_scan_view():
             return f"An error occurred: {e}"
 
     hosts = Host.query.all()
-    proxies = Proxy.query.all()
+    proxies = Proxies.query.all()  # Use Proxies instead of Proxy
     return render_template('scans.html', hosts=hosts, proxies=proxies)
 
 
@@ -60,7 +61,7 @@ def run_scan():
     if scan_all:
         print("[BULK SCAN] Starting scan of all hosts using all proxies.")
         hosts = Host.query.with_entities(Host.ip_address).distinct().all()
-        proxies = Proxy.query.filter_by(status='active', type='SOCKS5').all()
+        proxies = Proxies.query.filter_by(status='active', type='SOCKS5').all()  # Use Proxies instead of Proxy
 
         if not hosts or not proxies:
             flash("Missing hosts or proxies!", "danger")
