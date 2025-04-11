@@ -106,12 +106,16 @@ def test_proxy_connection(proxy, test_ip="8.8.8.8", test_port=53, timeout=5):
 def perform_scan(scan_id, ip_address, proxy_id, scan_type):
     """Perform a scan and update the results"""
     try:
+        logger.info(f"Starting scan for Scan ID: {scan_id}, IP: {ip_address}, Proxy ID: {proxy_id}, Type: {scan_type}")
+        
         if scan_type not in scan_handlers:
             raise Exception(f"Unknown scan type: {scan_type}")
         
         # Get the handler function and execute it
         handler = scan_handlers[scan_type]
         results_str = handler(ip_address, proxy_id)
+        
+        logger.info(f"Scan completed for Scan ID: {scan_id}, Results: {results_str}")
         
         # Update the scan results in the database
         update_scan_results(scan_id, 'Completed', results_str)
