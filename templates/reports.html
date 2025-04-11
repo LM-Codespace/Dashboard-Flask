@@ -1,13 +1,64 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reports</title>
-</head>
-<body>
-    <h1>Reports</h1>
-    <p>Display reports here...</p>
-    <!-- Add logic to display reports -->
-</body>
-</html>
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>Scan Reports</h1>
+    <p>Below are the results of all past scans.</p>
+
+    {% if scans %}
+        <table class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th>Scan ID</th>
+                    <th>IP Address</th>
+                    <th>Scan Type</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                    <th>Results</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for scan in scans %}
+                    <tr>
+                        <td>{{ scan.id }}</td>
+                        <td>{{ scan.ip_address }}</td>
+                        <td>{{ scan.scan_type }}</td>
+                        <td>
+                            <span class="badge 
+                            {% if scan.status == 'Completed' %}badge-success
+                            {% elif scan.status == 'Failed' %}badge-danger
+                            {% else %}badge-warning{% endif %}">
+                                {{ scan.status }}
+                            </span>
+                        </td>
+                        <td>{{ scan.date.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                        <td>
+                            {% if scan.scan_type == 'port_scan' %}
+                                {% if scan.result %}
+                                    <pre>{{ scan.result }}</pre>
+                                {% else %}
+                                    No results available yet.
+                                {% endif %}
+                            {% elif scan.scan_type == 'hostname_scan' %}
+                                {% if scan.result %}
+                                    Hostname: {{ scan.result }}
+                                {% else %}
+                                    No hostname detected.
+                                {% endif %}
+                            {% elif scan.scan_type == 'os_detection' %}
+                                {% if scan.result %}
+                                    OS Detected: {{ scan.result }}
+                                {% else %}
+                                    No OS detected.
+                                {% endif %}
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <div class="alert alert-warning mt-3">
+            <strong>No scans found.</strong> No reports have been generated yet.
+        </div>
+    {% endif %}
+{% endblock %}
