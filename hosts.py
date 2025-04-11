@@ -61,7 +61,7 @@ def hosts():
     if 'loggedin' in session:
         connection = get_db_connection()
         try:
-            with connection.cursor() as cursor:
+            with connection.cursor(pymysql.cursors.DictCursor) as cursor:  # Use DictCursor
                 cursor.execute('SELECT id, hostname, ip_address, os, status, ports, last_scanned, open_ports, resolved_hostname, location FROM hosts')  # Fetch all relevant columns
                 hosts = cursor.fetchall()
                 return render_template('hosts.html', hosts=hosts)
