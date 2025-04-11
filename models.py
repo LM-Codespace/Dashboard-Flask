@@ -48,14 +48,14 @@ class Proxies(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     ip_address = db.Column(db.String(100), nullable=False, index=True)
     port = db.Column(db.Integer, nullable=False)
-    status = db.Column(db.String(50), nullable=False, default='active', index=True)
+    status = db.Column(db.Enum(StatusEnum), nullable=False, default=StatusEnum.ACTIVE, index=True)  # Using StatusEnum
     type = db.Column(db.String(50), nullable=False)
 
     def __repr__(self):
         return f'<Proxy {self.ip_address}:{self.port}>'
 
     def __str__(self):
-        return f"{self.ip_address}:{self.port} ({self.status})"
+        return f"{self.ip_address}:{self.port} ({self.status.name})"  # Updated to use StatusEnum
 
 class Scan(db.Model):
     __tablename__ = 'scan'
@@ -74,4 +74,3 @@ class Scan(db.Model):
 
     def __str__(self):
         return f"Scan ID: {self.id}, Type: {self.scan_type}, Status: {self.status}"
-
