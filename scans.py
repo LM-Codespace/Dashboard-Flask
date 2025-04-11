@@ -91,7 +91,10 @@ def scan_history():
 
 @scans_bp.route('/reports')
 def reports():
-    return render_template('reports.html')
+    # Fetch all scans from the database
+    scans = Scan.query.order_by(Scan.date.desc()).all()
+    return render_template('reports.html', scans=scans)
+
 
 def perform_scan(scan_id, ip_address, proxy_id, scan_type):
     print(f"Performing scan for {scan_id} on {ip_address} with scan type {scan_type}.")
