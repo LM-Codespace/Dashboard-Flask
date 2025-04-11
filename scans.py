@@ -1,8 +1,9 @@
+scans_bp = Blueprint('scans', __name__, url_prefix='/scans')
+
 @scans_bp.route('/')
 def run_scan_view():
-    # render the page with recent scan data
-    scans = get_recent_scans()
-    return render_template('scans.html', recent_scans=scans)
+    # In production, you'd probably pull recent scan data here
+    return render_template('scans.html', recent_scans=[])
 
 @scans_bp.route('/run', methods=['POST'])
 def run_scan():
