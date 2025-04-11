@@ -1,16 +1,12 @@
 from flask import Flask, session, redirect, url_for, render_template
-import pymysql
+import logging
 from auth import auth_bp
 from hosts import hosts_bp
 from proxies import proxies_bp
-from db import db  # Import db from the new db.py
 
 # Configure logging
-import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
-pymysql.install_as_MySQLdb()
 
 # Create app factory function
 def create_app():
@@ -18,21 +14,15 @@ def create_app():
     app.secret_key = 'your_secret_key'
 
     # DB configuration
-    DB_CONFIG = {
-        'host': "localhost",
-        'user': "flaskuser",
-        'passwd': "flaskpassword",
-        'db': "flask_dashboard",
-        'autocommit': True
-    }
-
-    # Add the database initialization inside the app factory function
     app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://flaskuser:flaskpassword@localhost/flask_dashboard'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-    db.init_app(app)  # Initialize db here
+
+    # Import db here to avoid circular import
+    from flask_sqlalchemy import SQLAlchemy
+    db = SQLAlchemy(app)
 
     # Register blueprints
-    from scans import scans_bp  # Import here after creating app
+    from scans import scans_bp  # Import after creating app
     app.register_blueprint(auth_bp, url_prefix='/auth')
     app.register_blueprint(hosts_bp, url_prefix='/hosts')
     app.register_blueprint(proxies_bp, url_prefix='/proxies')
