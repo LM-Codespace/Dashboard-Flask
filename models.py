@@ -26,13 +26,15 @@ class Proxies(db.Model):
         return f'<Proxy {self.ip_address}:{self.port}>'
 
 class Scan(db.Model):
-    __tablename__ = 'scan'  # Explicitly defining the table name
-    id = db.Column(db.Integer, primary_key=True)  # Unique scan ID
-    date = db.Column(db.DateTime, default=datetime.utcnow)  # Date when scan was run
-    status = db.Column(db.String(50))  # Status of the scan (e.g., 'In Progress', 'Completed')
-    scan_type = db.Column(db.String(50))  # Type of the scan (e.g., 'hostname', 'port_check')
-    host_id = db.Column(db.Integer, db.ForeignKey('host.id'), nullable=False)  # Foreign key reference to Host
-    host = db.relationship('Host', backref=db.backref('scans', lazy=True))  # Establishing a relationship to the Host
+    __tablename__ = 'scan'
+    id = db.Column(db.Integer, primary_key=True)
+    date = db.Column(db.DateTime, default=datetime.utcnow)
+    status = db.Column(db.String(50))  # e.g., 'In Progress', 'Completed'
+    scan_type = db.Column(db.String(50))  # Type of scan (e.g., 'port_scan', 'hostname_scan')
+    ip_address = db.Column(db.String(50))  # Store the IP address
+    proxy_id = db.Column(db.Integer, db.ForeignKey('proxy.id'), nullable=True)  # Reference to proxies if needed
+    proxy = db.relationship('Proxy', backref=db.backref('scans', lazy=True))
 
     def __repr__(self):
         return f'<Scan {self.id}>'
+
