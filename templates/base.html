@@ -1,8 +1,103 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ title }}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        /* Global Styles */
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+            color: #333;
+        }
+
+        h2 {
+            font-size: 2.5rem;
+            margin: 0;
+            padding: 10px 20px;
+            color: #4CAF50;
+        }
+
+        .nav {
+            background-color: #1A1A2E;
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+        }
+
+        .nav h2 {
+            margin-left: 20px;
+        }
+
+        .nav ul {
+            list-style: none;
+            display: flex;
+            margin-right: 20px;
+        }
+
+        .nav ul li {
+            margin: 0 15px;
+        }
+
+        .nav ul li a {
+            text-decoration: none;
+            color: white;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: color 0.3s;
+        }
+
+        .nav ul li a:hover {
+            color: #4CAF50;
+        }
+
+        .content {
+            margin-top: 80px; /* Space for fixed nav */
+            padding: 30px;
+            background-color: white;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .nav ul {
+                display: block;
+                text-align: center;
+            }
+
+            .nav ul li {
+                margin: 10px 0;
+            }
+
+            .nav h2 {
+                font-size: 1.8rem;
+            }
+        }
+
+        /* Footer Styles */
+        footer {
+            background-color: #1A1A2E;
+            color: white;
+            text-align: center;
+            padding: 10px;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+        }
+    </style>
 </head>
 <body>
     <div class="nav">
@@ -12,11 +107,21 @@
             <li><a href="/hosts">Hosts</a></li>
             <li><a href="/proxies">Proxies</a></li>
             <li><a href="/scans">Scans</a></li>
+            <li><a href="/reports">Reports</a></li> <!-- New Link -->
+            <li><a href="/settings">Settings</a></li> <!-- New Link -->
+            <li><a href="/users">Users</a></li> <!-- New Link -->
+            <li><a href="/logs">Logs</a></li> <!-- New Link -->
+            <li><a href="/api">API</a></li> <!-- New Link -->
             <li><a href="/logout">Logout</a></li>
         </ul>
     </div>
+
     <div class="content">
         {% block content %}{% endblock %}
     </div>
+
+    <footer>
+        <p>&copy; 2025 CyberOps | All rights reserved</p>
+    </footer>
 </body>
 </html>
