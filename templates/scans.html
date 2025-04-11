@@ -1,5 +1,65 @@
 {% extends "base.html" %}
 {% block content %}
-    <h1>Scans</h1>
-    <p>Run security scans and view reports here.</p>
+<div class="container">
+    <h1>Security Scans</h1>
+    <p>Run scans and manage reports from this dashboard.</p>
+
+    <!-- Sub Navigation -->
+    <div class="subnav">
+        <a href="{{ url_for('scans.run_scan_view') }}" class="subnav-link">Run New Scan</a>
+        <a href="{{ url_for('scans.scan_history') }}" class="subnav-link">Scan History</a>
+        <a href="{{ url_for('scans.reports') }}" class="subnav-link">Reports</a>
+    </div>
+
+    <!-- New Scan Form -->
+    <div class="scan-form">
+        <h3>Run a New Scan</h3>
+        <form action="{{ url_for('scans.run_scan') }}" method="POST">
+            <div class="form-group">
+                <input type="text" name="target" placeholder="Enter IP or Domain" required>
+                <select name="scan_type">
+                    <option value="nmap">Nmap</option>
+                    <option value="nikto">Nikto</option>
+                    <option value="custom">Custom</option>
+                </select>
+                <button type="submit" class="btn">Start Scan</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Recent Scans Table -->
+    <div class="scan-table">
+        <h3>Recent Scans</h3>
+        <table class="styled-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Target</th>
+                    <th>Scan Type</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                    <th>Report</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for scan in recent_scans %}
+                    <tr>
+                        <td>{{ scan.id }}</td>
+                        <td>{{ scan.target }}</td>
+                        <td>{{ scan.scan_type }}</td>
+                        <td>{{ scan.status }}</td>
+                        <td>{{ scan.date }}</td>
+                        <td>
+                            {% if scan.status == 'completed' %}
+                                <a href="{{ url_for('scans.view_report', scan_id=scan.id) }}" class="btn btn-small">View</a>
+                            {% else %}
+                                <span>Pending</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
 {% endblock %}
