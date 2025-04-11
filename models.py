@@ -1,4 +1,8 @@
-from app import db  # Import db after app creation
+# models.py
+from flask_sqlalchemy import SQLAlchemy
+
+# Initialize SQLAlchemy object in models (we'll initialize it later in app.py)
+db = SQLAlchemy()
 
 class Host(db.Model):
     id = db.Column(db.Integer, primary_key=True)
