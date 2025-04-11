@@ -64,3 +64,9 @@ def run_scan():
 @scans_bp.route('/history')
 def scan_history():
     return render_template('scan_history.html', scans=[])  # You would populate this with actual scan history data
+
+@scans_bp.route('/reports')
+def reports():
+    # Add logic for displaying reports (e.g., fetching data, rendering a template)
+    return render_template('reports.html')
+
