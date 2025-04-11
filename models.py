@@ -25,6 +25,7 @@ class Proxies(db.Model):
     def __repr__(self):
         return f'<Proxy {self.ip_address}:{self.port}>'
 
+
 class Scan(db.Model):
     __tablename__ = 'scan'
     id = db.Column(db.Integer, primary_key=True)
@@ -32,9 +33,8 @@ class Scan(db.Model):
     status = db.Column(db.String(50))  # e.g., 'In Progress', 'Completed'
     scan_type = db.Column(db.String(50))  # Type of scan (e.g., 'port_scan', 'hostname_scan')
     ip_address = db.Column(db.String(50))  # Store the IP address
-    proxy_id = db.Column(db.Integer, db.ForeignKey('proxy.id'), nullable=True)  # Reference to proxies if needed
-    proxy = db.relationship('Proxy', backref=db.backref('scans', lazy=True))
+    proxy_id = db.Column(db.Integer, db.ForeignKey('proxies.id'), nullable=True)  # Reference to Proxies (corrected table name)
+    proxy = db.relationship('Proxies', backref=db.backref('scans', lazy=True))  # Corrected relationship
 
     def __repr__(self):
         return f'<Scan {self.id}>'
-
