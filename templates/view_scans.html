@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>Scan Results</h1>
+
+    <table class="table table-striped">
+        <thead class="thead-dark">
+            <tr>
+                <th>Scan ID</th>
+                <th>IP Address</th>
+                <th>Scan Type</th>
+                <th>Status</th>
+                <th>Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for scan in scans %}
+                <tr>
+                    <td>{{ scan.id }}</td>
+                    <td>{{ scan.ip_address }}</td>  <!-- Display the IP address -->
+                    <td>{{ scan.scan_type }}</td>
+                    <td>{{ scan.status }}</td>
+                    <td>{{ scan.date }}</td>  <!-- Display the date -->
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}
