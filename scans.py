@@ -164,6 +164,10 @@ def perform_scan(scan_id, ip_address, proxy_id, scan_type):
         else:
             results_str = "Unknown scan type."
 
+        # Log the results before updating the database
+        print(f"[Scan Results] Scan ID: {scan_id} | Results: {results_str}")
+
+        # Update the scan status and results
         with db.session.begin():
             scan = Scan.query.get(scan_id)
             scan.status = 'Completed'
