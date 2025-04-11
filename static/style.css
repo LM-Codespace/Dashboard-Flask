@@ -1,4 +1,4 @@
-/* Global Styling */
+/* General Body Styling */
 body {
     display: flex;
     margin: 0;
@@ -7,28 +7,14 @@ body {
     height: 100vh;
 }
 
-.content {
-    flex-grow: 1;
-    padding: 40px;
-}
-
-/* General Container Styles */
-.container {
-    background-color: #ffffff;
-    padding: 40px;
-    border-radius: 12px;
-    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
-    margin-bottom: 30px;
-}
-
-/* Nav Styling */
+/* Navigation Styles */
 .nav {
     width: 220px;
     background-color: #1a202c;
     color: white;
     padding: 20px;
     height: 100vh;
-    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+    box-shadow: 2px 0 10px rgba(0,0,0,0.1);
 }
 
 .nav h2 {
@@ -56,20 +42,57 @@ body {
     color: #63b3ed;
 }
 
-/* Form Styling */
-form {
+/* Content Section Styling */
+.content {
+    flex-grow: 1;
+    padding: 40px;
+}
+
+/* Container Styles (Dashboard, Login, etc.) */
+.dashboard-container,
+.login-container,
+.hosts-container,
+.form-container,
+.reports-container,
+.scan-container {
+    background-color: #ffffff;
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
+    max-width: 600px;
+    width: 100%;
+    margin: auto;
+}
+
+.login-container h2,
+.hosts-container h1,
+.reports-container h1,
+.scan-container h1 {
+    color: #2d3748;
+    font-size: 24px;
+    margin-bottom: 25px;
+}
+
+.hosts-container p,
+.reports-container p,
+.scan-container p {
+    color: #4a5568;
+    font-size: 16px;
+    margin-bottom: 40px;
+}
+
+/* Forms */
+form,
+.add-host-form,
+.bulk-upload-form,
+.add-host-form,
+.bulk-upload-form {
     display: flex;
     flex-direction: column;
     gap: 15px;
 }
 
-label {
-    text-align: left;
-    color: #4a5568;
-    font-weight: 500;
-    font-size: 14px;
-}
-
+/* Input Styles */
 input[type="text"],
 input[type="password"],
 select.form-control,
@@ -89,8 +112,10 @@ input[type="file"]:focus {
     outline: none;
 }
 
+/* Submit & Button Styling */
+input[type="submit"],
 button[type="submit"],
-input[type="submit"] {
+.btn {
     padding: 12px;
     background-color: #3182ce;
     color: white;
@@ -101,22 +126,24 @@ input[type="submit"] {
     transition: background-color 0.3s ease;
 }
 
+input[type="submit"]:hover,
 button[type="submit"]:hover,
-input[type="submit"]:hover {
+.btn:hover {
     background-color: #2563eb;
 }
 
-/* Table Styling */
-.table, .proxy-table, .hosts-table, .reports-table {
+/* Table Styles */
+table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 20px;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
 }
 
-.table th, .table td,
-.proxy-table th, .proxy-table td,
-.hosts-table th, .hosts-table td,
-.reports-table th, .reports-table td {
+th, td {
     padding: 12px 15px;
     border: 1px solid #ddd;
     text-align: left;
@@ -124,82 +151,85 @@ input[type="submit"]:hover {
     color: #4a5568;
 }
 
-.table th, .proxy-table th, .hosts-table th, .reports-table th {
+th {
     background-color: #1a202c;
     color: white;
     font-weight: bold;
     text-transform: uppercase;
 }
 
-.table tr:nth-child(even), .proxy-table tr:nth-child(even), .hosts-table tr:nth-child(even), .reports-table tr:nth-child(even) {
+tr:nth-child(even) {
     background-color: #f9fafb;
 }
 
-.table tr:nth-child(odd), .proxy-table tr:nth-child(odd), .hosts-table tr:nth-child(odd), .reports-table tr:nth-child(odd) {
+tr:nth-child(odd) {
     background-color: #f0f4f8;
 }
 
-.table tr:hover, .proxy-table tr:hover, .hosts-table tr:hover, .reports-table tr:hover {
+tr:hover {
     background-color: #e2e8f0;
 }
 
-.table .btn, .proxy-table .btn, .hosts-table .btn, .reports-table .btn {
-    padding: 6px 12px;
-    font-size: 14px;
-    border-radius: 6px;
-    text-align: center;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
+tr.active {
+    background-color: #e6f7e6;
 }
 
-.table .btn-warning, .proxy-table .btn-warning, .hosts-table .btn-warning, .reports-table .btn-warning {
+tr.inactive {
+    background-color: #ffe6e6;
+}
+
+/* Action Button Styles in Tables */
+.btn-warning {
     background-color: #f59e0b;
     color: white;
 }
 
-.table .btn-danger, .proxy-table .btn-danger, .hosts-table .btn-danger, .reports-table .btn-danger {
+.btn-danger {
     background-color: #e53e3e;
     color: white;
 }
 
-.table .btn-warning:hover, .proxy-table .btn-warning:hover, .hosts-table .btn-warning:hover, .reports-table .btn-warning:hover {
+.btn-warning:hover {
     background-color: #d97706;
 }
 
-.table .btn-danger:hover, .proxy-table .btn-danger:hover, .hosts-table .btn-danger:hover, .reports-table .btn-danger:hover {
+.btn-danger:hover {
     background-color: #c53030;
 }
 
-.table td a {
-    color: #3182ce;
+/* Sub-navigation Links */
+.subnav {
+    margin-bottom: 20px;
+}
+
+.subnav-link {
+    margin-right: 10px;
+    padding: 8px 16px;
+    background: #f0f0f0;
+    border-radius: 6px;
     text-decoration: none;
 }
 
-.table td a:hover {
-    text-decoration: underline;
+.subnav-link:hover {
+    background: #ddd;
 }
 
-/* Additional Classes */
-.status-in-progress {
-    color: orange;
-    font-weight: bold;
+/* Helper Text */
+.form-group small {
+    font-size: 12px;
+    color: #a0aec0;
 }
 
-.status-completed {
-    color: green;
-    font-weight: bold;
-}
-
-.status-failed {
-    color: red;
-    font-weight: bold;
-}
-
+/* Debug Info Section */
 .alert-info {
     background-color: #e0f7fa;
     border-color: #b2ebf2;
     color: #00796b;
     margin-bottom: 20px;
+}
+
+.alert-info strong {
+    font-weight: bold;
 }
 
 .alert-warning {
@@ -218,7 +248,17 @@ input[type="submit"]:hover {
     text-decoration: underline;
 }
 
-/* Responsive Design */
+/* Button Styling */
+.btn-secondary {
+    background-color: #e2e8f0;
+    color: #4a5568;
+}
+
+.btn-secondary:hover {
+    background-color: #cbd5e0;
+}
+
+/* Responsive Design for Smaller Screens */
 @media (max-width: 768px) {
     .form-control {
         padding: 10px;
@@ -243,4 +283,25 @@ input[type="submit"]:hover {
     .btn {
         padding: 10px 18px;
     }
+
+    table th, table td {
+        font-size: 12px;
+        padding: 8px 10px;
+    }
+}
+
+/* Status Classes */
+.status-in-progress {
+    color: orange;
+    font-weight: bold;
+}
+
+.status-completed {
+    color: green;
+    font-weight: bold;
+}
+
+.status-failed {
+    color: red;
+    font-weight: bold;
 }
