@@ -59,18 +59,23 @@
                 </tr>
             </thead>
             <tbody>
-                {% for host in hosts %}
+                {% if hosts %}
+                    {% for host in hosts %}
+                        <tr>
+                            <td>{{ host.resolved_hostname or host.ip_address }}</td>
+                            <td>{{ host.ip_address }}</td>
+                            <td>{{ host.operating_system }}</td>
+                            <td>
+                                <a href="/hosts/edit/{{ host.id }}" class="btn btn-sm btn-warning">Edit</a>
+                                <a href="/hosts/delete/{{ host.id }}" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?')">Delete</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% else %}
                     <tr>
-                        <!-- Display resolved_hostname as Hostname, and ip_address as IP Address -->
-                        <td>{{ host.resolved_hostname or host.ip_address }}</td>
-                        <td>{{ host.ip_address }}</td>
-                        <td>{{ host.operating_system }}</td>
-                        <td>
-                            <a href="/hosts/edit/{{ host.id }}" class="btn btn-sm btn-warning">Edit</a>
-                            <a href="/hosts/delete/{{ host.id }}" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?')">Delete</a>
-                        </td>
+                        <td colspan="4">No hosts found</td>
                     </tr>
-                {% endfor %}
+                {% endif %}
             </tbody>
         </table>
     </div>
