@@ -151,18 +151,30 @@ def check_proxies():
     check_and_update_proxies()
     return redirect(url_for('proxies.proxies'))
 
-# Route to delete dead proxies and reindex
 @proxies_bp.route('/delete_dead_proxies', methods=['POST'])
 def delete_dead_proxies():
     connection = get_db_connection()
     try:
         with connection.cursor() as cursor:
+            # First, set proxy_id to NULL for all scans using the proxy
+            cursor.execute("UPDATE scan SET proxy_id = NULL WHERE proxy_id IN (SELECT id FROM proxies WHERE status = %s)", ('inactive',))
+
+            # Now, delete the dead proxies
             cursor.execute("DELETE FROM proxies WHERE status = %s", ('inactive',))
+            
+            # Reindex the remaining proxies (optional)
             cursor.execute("SET @i := 0;")
             cursor.execute("UPDATE proxies SET id = (@i := @i + 1);")
             cursor.execute("ALTER TABLE proxies AUTO_INCREMENT = 1;")
+        
+        # Commit changes to the database
         connection.commit()
         print("Dead proxies deleted and IDs reindexed successfully.")
+    
+    except Exception as e:
+        print(f"Error occurred while deleting dead proxies: {e}")
+    
     finally:
         connection.close()
+    
     return redirect(url_for('proxies.proxies'))
