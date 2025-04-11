@@ -25,12 +25,13 @@ class Proxies(db.Model):
         return f'<Proxy {self.ip_address}:{self.port}>'
 
 class Scan(db.Model):
+    __tablename__ = 'scan'
     id = db.Column(db.Integer, primary_key=True)
-    date = db.Column(db.DateTime, nullable=False)
-    status = db.Column(db.String(50), nullable=False)
-    type = db.Column(db.String(50), nullable=False)
-    host_id = db.Column(db.Integer, db.ForeignKey('host.id'), nullable=False)
+    date = db.Column(db.DateTime, default=datetime.utcnow)
+    status = db.Column(db.String(50))
+    scan_type = db.Column(db.String(50))
+    host_id = db.Column(db.Integer, db.ForeignKey('host.id'))
     host = db.relationship('Host', backref=db.backref('scans', lazy=True))
 
     def __repr__(self):
-        return f'<Scan {self.id} for {self.host.name}>'
+        return f'<Scan {self.id}>'
