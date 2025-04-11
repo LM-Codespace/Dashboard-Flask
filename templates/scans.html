@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+
 {% block content %}
 <div class="container">
     <h1>Security Scans</h1>
@@ -16,12 +17,21 @@
         <h3>Run a New Scan</h3>
         <form action="{{ url_for('scans.run_scan') }}" method="POST">
             <div class="form-group">
-                <input type="text" name="target" placeholder="Enter IP or Domain" required>
+                <!-- Select Hosts to Scan -->
+                <label for="hosts">Select Hosts:</label><br>
+                {% for host in hosts %}
+                    <input type="checkbox" name="hosts" value="{{ host.id }}"> {{ host.name }} ({{ host.ip }})<br>
+                {% endfor %}
+                <br>
+
+                <!-- Select Scan Type -->
+                <label for="scan_type">Select Scan Type:</label><br>
                 <select name="scan_type">
-                    <option value="nmap">Nmap</option>
-                    <option value="nikto">Nikto</option>
-                    <option value="custom">Custom</option>
+                    <option value="hostname">Hostname Resolution</option>
+                    <option value="port_check">Port Check (80, 443)</option>
                 </select>
+                <br>
+
                 <button type="submit" class="btn">Start Scan</button>
             </div>
         </form>
