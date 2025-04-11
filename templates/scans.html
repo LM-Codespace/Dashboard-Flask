@@ -1,76 +1,38 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container">
-    <h1>Security Scans</h1>
-    <p>Run scans and manage reports from this dashboard.</p>
+    <h1>Run Scan</h1>
+    <p>Choose the type of scan, select an IP address, and optionally choose a proxy for the scan.</p>
 
-    <!-- Sub Navigation -->
-    <div class="subnav">
-        <a href="{{ url_for('scans.run_scan_view') }}" class="subnav-link">Run New Scan</a>
-        <a href="{{ url_for('scans.scan_history') }}" class="subnav-link">Scan History</a>
-        <a href="{{ url_for('scans.reports') }}" class="subnav-link">Reports</a>
+    <form method="POST" action="/scans/run">
+        <div class="form-group">
+            <label for="scan_type">Scan Type</label>
+            <select name="scan_type" class="form-control" required>
+                <option value="port_scan">Port Scan</option>
+                <option value="hostname_scan">Hostname Scan</option>
+                <!-- Add other scan types as needed -->
+            </select>
+        </div>
 
-    </div>
-
-    <!-- New Scan Form -->
-    <div class="scan-form">
-        <h3>Run a New Scan</h3>
-        <form action="{{ url_for('scans.run_scan') }}" method="POST">
-            <div class="form-group">
-                <!-- Select Hosts to Scan -->
-                <label for="hosts">Select Hosts:</label><br>
+        <div class="form-group">
+            <label for="ip_address">Select IP Address</label>
+            <select name="ip_address" class="form-control" required>
                 {% for host in hosts %}
-                    <input type="checkbox" name="hosts" value="{{ host.id }}"> {{ host.name }} ({{ host.ip }})<br>
+                    <option value="{{ host[2] }}">{{ host[1] }} ({{ host[2] }})</option>
                 {% endfor %}
-                <br>
+            </select>
+        </div>
 
-                <!-- Select Scan Type -->
-                <label for="scan_type">Select Scan Type:</label><br>
-                <select name="scan_type">
-                    <option value="hostname">Hostname Resolution</option>
-                    <option value="port_check">Port Check (80, 443)</option>
-                </select>
-                <br>
-
-                <button type="submit" class="btn">Start Scan</button>
-            </div>
-        </form>
-    </div>
-
-    <!-- Recent Scans Table -->
-    <div class="scan-table">
-        <h3>Recent Scans</h3>
-        <table class="styled-table">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Target</th>
-                    <th>Scan Type</th>
-                    <th>Status</th>
-                    <th>Date</th>
-                    <th>Report</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for scan in recent_scans %}
-                    <tr>
-                        <td>{{ scan.id }}</td>
-                        <td>{{ scan.target }}</td>
-                        <td>{{ scan.scan_type }}</td>
-                        <td>{{ scan.status }}</td>
-                        <td>{{ scan.date }}</td>
-                        <td>
-                            {% if scan.status == 'completed' %}
-                                <a href="{{ url_for('scans.view_report', scan_id=scan.id) }}" class="btn btn-small">View</a>
-                            {% else %}
-                                <span>Pending</span>
-                            {% endif %}
-                        </td>
-                    </tr>
+        <div class="form-group">
+            <label for="proxy_id">Select Proxy (Optional)</label>
+            <select name="proxy_id" class="form-control">
+                <option value="">None</option>
+                {% for proxy in proxies %}
+                    <option value="{{ proxy[0] }}">{{ proxy[1] }}:{{ proxy[2] }}</option>
                 {% endfor %}
-            </tbody>
-        </table>
-    </div>
-</div>
+            </select>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Run Scan</button>
+    </form>
 {% endblock %}
