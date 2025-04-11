@@ -4,35 +4,35 @@
     <h1>Run Scan</h1>
     <p>Choose the type of scan, select an IP address, and optionally choose a proxy for the scan.</p>
 
-    <form method="POST" action="/scans/run">
-        <div class="form-group">
-            <label for="scan_type">Scan Type</label>
-            <select name="scan_type" class="form-control" required>
-                <option value="port_scan">Port Scan</option>
-                <option value="hostname_scan">Hostname Scan</option>
-                <!-- Add other scan types as needed -->
-            </select>
-        </div>
+<form method="POST">
+    <div class="form-group">
+        <label for="ip_address">IP Address:</label>
+        <select id="ip_address" name="ip_address" class="form-control" required>
+            <option value="">Select IP Address</option>
+            {% for host in hosts %}
+                <option value="{{ host.ip_address }}">{{ host.ip_address }}</option>
+            {% endfor %}
+        </select>
+    </div>
 
-        <div class="form-group">
-            <label for="ip_address">Select IP Address</label>
-            <select name="ip_address" class="form-control" required>
-                {% for host in hosts %}
-                    <option value="{{ host[2] }}">{{ host[1] }} ({{ host[2] }})</option>
-                {% endfor %}
-            </select>
-        </div>
+    <div class="form-group">
+        <label for="proxy_id">Proxy:</label>
+        <select id="proxy_id" name="proxy_id" class="form-control" required>
+            <option value="">Select Proxy</option>
+            {% for proxy in proxies %}
+                <option value="{{ proxy.id }}">{{ proxy.ip_address }}:{{ proxy.port }} ({{ proxy.type }})</option>
+            {% endfor %}
+        </select>
+    </div>
 
-        <div class="form-group">
-            <label for="proxy_id">Select Proxy (Optional)</label>
-            <select name="proxy_id" class="form-control">
-                <option value="">None</option>
-                {% for proxy in proxies %}
-                    <option value="{{ proxy[0] }}">{{ proxy[1] }}:{{ proxy[2] }}</option>
-                {% endfor %}
-            </select>
-        </div>
+    <div class="form-group">
+        <label for="scan_type">Scan Type:</label>
+        <select id="scan_type" name="scan_type" class="form-control" required>
+            <option value="port_scan">Port Scan</option>
+            <option value="hostname_scan">Hostname Scan</option>
+        </select>
+    </div>
 
-        <button type="submit" class="btn btn-primary">Run Scan</button>
-    </form>
+    <button type="submit" class="btn btn-primary">Start Scan</button>
+</form>
 {% endblock %}
