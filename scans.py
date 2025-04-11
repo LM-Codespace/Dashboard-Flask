@@ -37,6 +37,7 @@ def run_scan_view():
         db.session.commit()
 
         flash('Scan initiated successfully!', 'success')
+        print(f"New scan created for IP: {ip_address}, Scan type: {scan_type}, Proxy ID: {proxy_id}")
         return redirect(url_for('scans.run_scan_view'))
 
     # Fetch available IPs from the hosts table (which we know has data)
@@ -74,14 +75,14 @@ def run_scan():
         print(f"Starting scan {scan_id} for IP: {ip_address} with scan type {scan_type}.")
 
         # Start the scan in a separate thread to avoid blocking
+        print(f"Creating thread for scan {scan_id}.")
         t = threading.Thread(target=perform_scan, args=(scan_id, ip_address, proxy_id, scan_type))
-        print(f"Thread created for scan {scan_id}.")
+        t.daemon = True  # Ensures the thread will close when the main process exits
         t.start()
 
         flash('Scan started successfully!', 'success')
         return redirect(url_for('scans.view_scans'))
     return redirect(url_for('auth.login'))
-
 
 @scans_bp.route('/history')
 def scan_history():
@@ -121,3 +122,4 @@ def perform_scan(scan_id, ip_address, proxy_id, scan_type):
             scan = Scan.query.get(scan_id)
             scan.status = 'Failed'
             db.session.commit()
+
