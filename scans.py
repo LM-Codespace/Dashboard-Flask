@@ -14,6 +14,41 @@ logger = logging.getLogger(__name__)
 
 scans_bp = Blueprint('scans', __name__)
 
+# Function to perform port scan
+def perform_port_scan(ip_address, proxy_id):
+    """Perform a port scan on a given IP address"""
+    open_ports = []
+    for port in [21, 22, 80, 443, 3389]:  # Common ports for testing
+        try:
+            s = socks.socksocket()
+            s.settimeout(3)  # Increased timeout for proxy connections
+            s.connect((ip_address, port))
+            open_ports.append(str(port))
+            s.close()
+        except Exception as e:
+            logger.error(f"Port {port} closed or error: {str(e)}")
+            continue
+    return "Open Ports: " + ", ".join(open_ports) if open_ports else "No open ports found"
+
+# Function to perform hostname scan
+def perform_hostname_scan(ip_address, proxy_id):
+    """Perform a hostname resolution scan on a given IP address"""
+    try:
+        socks.set_default_proxy(socks.SOCKS5, proxy.ip_address, proxy.port, rdns=True)
+        socket.socket = socks.socksocket
+        resolved_hostname = socket.gethostbyaddr(ip_address)
+        return f"Resolved Hostname: {resolved_hostname[0]}"
+    except socket.herror as e:
+        return f"Hostname resolution failed: {e}"
+    except Exception as e:
+        return f"Error during hostname resolution: {e}"
+
+# Scan Handlers Dictionary to map scan types to functions
+scan_handlers = {
+    'port_scan': perform_port_scan,
+    'hostname_scan': perform_hostname_scan,
+}
+
 # Helper function to get proxy by ID
 def get_proxy_by_id(proxy_id):
     return Proxies.query.filter_by(id=proxy_id, status='active', type='SOCKS5').first()
@@ -67,12 +102,6 @@ def test_proxy_connection(proxy, test_ip="8.8.8.8", test_port=53, timeout=5):
         logger.error(f"[Proxy Test Failed] Proxy {proxy.ip_address}:{proxy.port} failed: {str(e)}")
         return False
 
-# Scan Handlers Dictionary to map scan types to functions
-scan_handlers = {
-    'port_scan': perform_port_scan,
-    'hostname_scan': perform_hostname_scan,
-}
-
 # Function to handle individual scans
 def perform_scan(scan_id, ip_address, proxy_id, scan_type):
     """Perform a scan and update the results"""
@@ -99,35 +128,6 @@ def update_scan_results(scan_id, status, results_str):
         scan.results = results_str
         db.session.commit()
     logger.info(f"[Scan Results] Scan ID: {scan_id} | Status: {status} | Results: {results_str}")
-
-# Function to perform port scan
-def perform_port_scan(ip_address, proxy_id):
-    """Perform a port scan on a given IP address"""
-    open_ports = []
-    for port in [21, 22, 80, 443, 3389]:  # Common ports for testing
-        try:
-            s = socks.socksocket()
-            s.settimeout(3)  # Increased timeout for proxy connections
-            s.connect((ip_address, port))
-            open_ports.append(str(port))
-            s.close()
-        except Exception as e:
-            logger.error(f"Port {port} closed or error: {str(e)}")
-            continue
-    return "Open Ports: " + ", ".join(open_ports) if open_ports else "No open ports found"
-
-# Function to perform hostname scan
-def perform_hostname_scan(ip_address, proxy_id):
-    """Perform a hostname resolution scan on a given IP address"""
-    try:
-        socks.set_default_proxy(socks.SOCKS5, proxy.ip_address, proxy.port, rdns=True)
-        socket.socket = socks.socksocket
-        resolved_hostname = socket.gethostbyaddr(ip_address)
-        return f"Resolved Hostname: {resolved_hostname[0]}"
-    except socket.herror as e:
-        return f"Hostname resolution failed: {e}"
-    except Exception as e:
-        return f"Error during hostname resolution: {e}"
 
 # Route for running a scan
 @scans_bp.route('/', methods=['GET', 'POST'])
