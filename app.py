@@ -4,14 +4,13 @@ import logging
 from auth import auth_bp
 from hosts import hosts_bp
 from proxies import proxies_bp
-from scans import scans_bp  # Import scans blueprint after app and db initialization
-from models import db  # Import db from models.py
+from scans import scans_bp
+from models import db, Host, Proxies  # Import models needed for scans
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Create app factory function
 def create_app():
     app = Flask(__name__)
     app.secret_key = 'your_secret_key'
@@ -40,9 +39,10 @@ def create_app():
     def dashboard():
         return render_template('dashboard.html')
 
-    @app.route('/scans')
-    def scans():
-        return render_template('scans.html')
+    # Remove this duplicate route - it's already handled by scans_bp
+    # @app.route('/scans')
+    # def scans():
+    #     return render_template('scans.html')
 
     return app
 
