@@ -19,10 +19,10 @@ class Host(db.Model):
 
 class Proxies(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    ip_address = db.Column(db.String(100), nullable=False)  # Store proxy IP address
-    port = db.Column(db.Integer, nullable=False)  # Store proxy port number
-    status = db.Column(db.String(50), nullable=False)  # Status of the proxy (active, inactive, etc.)
-    type = db.Column(db.String(50), nullable=False)  # Proxy type (e.g., 'SOCKS5')
+    ip_address = db.Column(db.String(100), nullable=False)
+    port = db.Column(db.Integer, nullable=False)
+    status = db.Column(db.String(50), nullable=False)  # Proxy status (active, inactive, etc.)
+    type = db.Column(db.String(50), nullable=False)  # Proxy type (e.g., SOCKS5)
 
     def __repr__(self):
         return f'<Proxy {self.ip_address}:{self.port}>'
