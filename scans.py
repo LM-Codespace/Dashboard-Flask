@@ -4,13 +4,10 @@ import random
 import socket
 import requests
 import geocoder
-from app import db  # Import the db object here
-from models import Host, Proxies  # Ensure you're importing your models
+from db import db  # Import db here
 
-# Create the blueprint
 scans_bp = Blueprint('scans', __name__)
 
-# Fetch the valid SOCKS5 proxies
 def get_valid_proxies():
     return [p for p in Proxies.query.filter_by(status='active', type='SOCKS5')]
 
