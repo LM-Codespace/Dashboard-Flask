@@ -1,4 +1,4 @@
-from app import db  # Import db from app.py
+from app import db  # Import db after app creation
 
 class Host(db.Model):
     id = db.Column(db.Integer, primary_key=True)
